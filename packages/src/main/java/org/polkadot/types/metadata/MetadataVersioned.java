@@ -6,6 +6,7 @@ import org.polkadot.types.codec.Struct;
 import org.polkadot.types.metadata.v0.MetadataV0;
 import org.polkadot.types.metadata.v1.MetadataV1;
 import org.polkadot.types.metadata.v1.ToV0;
+import org.polkadot.types.metadata.v11.MetadataV11;
 import org.polkadot.types.metadata.v2.MetadataV2;
 import org.polkadot.types.metadata.v2.ToV1;
 import org.polkadot.types.metadata.v3.MetadataV3;
@@ -27,6 +28,14 @@ public class MetadataVersioned extends Struct implements Types.MetadataInterface
                             .add("MetadataV1", MetadataV1.class)
                             .add("MetadataV2", MetadataV2.class)
                             .add("MetadataV3", MetadataV3.class)
+                            .add("MetadataV4", MetadataV3.class)
+                            .add("MetadataV5", MetadataV3.class)
+                            .add("MetadataV6", MetadataV3.class)
+                            .add("MetadataV7", MetadataV3.class)
+                            .add("MetadataV8", MetadataV3.class)
+                            .add("MetadataV9", MetadataV3.class)
+                            .add("MetadataV10", MetadataV3.class)
+                            .add("MetadataV11", MetadataV11.class)
                     , value, -1, null
             );
         }
@@ -59,6 +68,13 @@ public class MetadataVersioned extends Struct implements Types.MetadataInterface
          */
         public MetadataV3 asV3() {
             return ((MetadataV3) this.value());
+        }
+
+        /**
+         * Returns the wrapped values as a V11 object
+         */
+        public MetadataV11 asV11() {
+            return ((MetadataV11) this.value());
         }
 
 
@@ -147,7 +163,7 @@ public class MetadataVersioned extends Struct implements Types.MetadataInterface
             return this.getMetadata().asV2();
         }
 
-        assert this.getVersion() == 3 : "Cannot convert metadata from v" + this.getVersion() + " to v1";
+        assert this.getVersion() == 3 : "Cannot convert metadata from v" + this.getVersion() + " to v2";
 
         if (this.convertedV2 == null) {
             this.convertedV2 = ToV2.toV2(this.getMetadata().asV3());
@@ -161,8 +177,15 @@ public class MetadataVersioned extends Struct implements Types.MetadataInterface
      * Returns the wrapped values as a V3 object
      */
     public MetadataV3 asV3() {
-        assert this.getVersion() == 3 : "Cannot convert metadata from v" + this.getVersion() + " to v3";
         return this.getMetadata().asV3();
+    }
+
+    /**
+     * Returns the wrapped values as a V11 object
+     */
+    public MetadataV11 asV11() {
+        assert this.getVersion() == 11 : "Cannot convert metadata from v" + this.getVersion() + " to v11";
+        return this.getMetadata().asV11();
     }
 
 

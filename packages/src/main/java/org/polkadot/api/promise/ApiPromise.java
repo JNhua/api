@@ -99,8 +99,8 @@ public class ApiPromise extends ApiBase<Promise> {
      * });
      * ```
      */
-    public static Promise<ApiPromise> create(IProvider iProvider) {
-        ApiPromise apiPromise = new ApiPromise(iProvider);
+        public static Promise<ApiPromise> create(IProvider iProvider) {
+            ApiPromise apiPromise = new ApiPromise(iProvider);
         return apiPromise.isReadyPromise;
     }
 

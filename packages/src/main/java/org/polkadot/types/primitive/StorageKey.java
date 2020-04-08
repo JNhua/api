@@ -24,7 +24,6 @@ public class StorageKey extends Bytes {
 
         public abstract Object toJson();
 
-        //byte[] headKey;
         StorageKey headKey;
         //(arg?: any): Uint8Array;
         //      meta: StorageFunctionMetadata;
@@ -71,12 +70,9 @@ public class StorageKey extends Bytes {
     private Modules.StorageFunctionMetadata meta;
     private String outputType;
 
-    //  constructor (value: AnyU8a | StorageKey | StorageFunction | [StorageFunction, any]) {
     public StorageKey(Object value) {
         super(decodeStorageKey(value));
 
-        //this._meta = StorageKey.getMeta(value as StorageKey);
-        //this._outputType = StorageKey.getType(value as StorageKey);
         this.meta = getMeta(value);
         this.outputType = getType(value);
     }
@@ -121,6 +117,7 @@ public class StorageKey extends Bytes {
 
         return value;
     }
+
 
 
     /**

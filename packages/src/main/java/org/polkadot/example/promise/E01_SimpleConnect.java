@@ -4,7 +4,7 @@ import com.onehilltech.promises.Promise;
 import org.polkadot.api.promise.ApiPromise;
 import org.polkadot.rpc.provider.ws.WsProvider;
 
-public class E01_SimpleConnect {
+    public class E01_SimpleConnect {
 
     //static String endPoint = "wss://poc3-rpc.polkadot.io/";
     //static String endPoint = "wss://substrate-rpc.parity.io/";

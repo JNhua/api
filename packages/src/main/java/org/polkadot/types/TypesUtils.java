@@ -19,7 +19,7 @@ public class TypesUtils {
     private static <T extends Codec> Types.ConstructorCodec<T> getBuilderConstructorCodec(Class<T> clazz) {
         try {
             Method builderMethod = clazz.getDeclaredMethod("builder");
-            Object builder = builderMethod.invoke(null, null);
+            Object builder = builderMethod.invoke(null, new  Object[]{});
             return (Types.ConstructorCodec) builder;
         } catch (IllegalAccessException e) {
         } catch (InvocationTargetException e) {
@@ -91,10 +91,10 @@ public class TypesUtils {
                 } else {
                     params = values;
                 }
-                //TODO 2019-05-10 17:27  append null
-                for (int i = 0; i < parameterTypes.length; i++) {
-                    Class<?> parameterType = parameterTypes[i];
-                }
+//                //TODO 2019-05-10 17:27  append null
+//                for (int i = 0; i < parameterTypes.length; i++) {
+//                    Class<?> parameterType = parameterTypes[i];
+//                }
 
                 T ret = null;
                 try {
