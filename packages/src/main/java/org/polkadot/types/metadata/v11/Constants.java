@@ -13,13 +13,13 @@ public interface Constants {
     /**
      * The definition of a constant
      */
-    class MetadataConstant extends Struct {
-        public MetadataConstant(Object value) {
+    class ModuleConstantMetadataV11 extends Struct {
+        public ModuleConstantMetadataV11(Object value) {
             super(new Types.ConstructorDef()
                             .add("name", Text.class)
                             .add("type", Type.class)
                             .add("value", Bytes.class)
-                            .add("docs", Vector.with(TypesUtils.getConstructorCodec(Text.class)))
+                            .add("documentation", Vector.with(TypesUtils.getConstructorCodec(Text.class)))
                     , value);
         }
 
@@ -27,8 +27,8 @@ public interface Constants {
         /**
          * The {@link Text} documentation
          */
-        public Vector<Text> getDocs() {
-            return this.getField("docs");
+        public Vector<Text> getDocumentation() {
+            return this.getField("documentation");
         }
 
         /**

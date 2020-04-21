@@ -1,22 +1,16 @@
 package org.polkadot.types.metadata.v0;
 
-import com.google.common.collect.Lists;
 import org.polkadot.types.Types;
 import org.polkadot.types.TypesUtils;
-import org.polkadot.types.codec.Enum;
 import org.polkadot.types.codec.*;
-import org.polkadot.types.metadata.v1.Storage;
-import org.polkadot.types.primitive.Bytes;
 import org.polkadot.types.primitive.Text;
 import org.polkadot.types.primitive.Type;
 import org.polkadot.types.primitive.U16;
 
-import java.util.Map;
-
 public interface Modules {
 
-    class FunctionArgumentMetadata extends Struct {
-        public FunctionArgumentMetadata(Object value) {
+    class FunctionArgumentMetadataV0 extends Struct {
+        public FunctionArgumentMetadataV0(Object value) {
             super(new Types.ConstructorDef()
                     .add("name", Text.class)
                     .add("type", Type.class), value);
@@ -37,22 +31,14 @@ public interface Modules {
         }
     }
 
-    class FunctionMetadata extends Struct {
-        public FunctionMetadata(Object value) {
+    class FunctionMetadataV0 extends Struct {
+        public FunctionMetadataV0(Object value) {
             super(new Types.ConstructorDef()
                             .add("id", U16.class)
                             .add("name", Text.class)
-                            .add("arguments", Vector.with(TypesUtils.getConstructorCodec(FunctionArgumentMetadata.class)))
+                            .add("arguments", Vector.with(TypesUtils.getConstructorCodec(FunctionArgumentMetadataV0.class)))
                             .add("documentation", Vector.with(TypesUtils.getConstructorCodec(Text.class)))
                     , value);
-        }
-
-
-        /**
-         * The FunctionArgumentMetadata for arguments
-         */
-        public Vector<FunctionArgumentMetadata> getArguments() {
-            return this.getField("arguments");
         }
 
         /**
@@ -77,11 +63,11 @@ public interface Modules {
         }
     }
 
-    class CallMetadata extends Struct {
-        public CallMetadata(Object value) {
+    class CallMetadataV0 extends Struct {
+        public CallMetadataV0(Object value) {
             super(new Types.ConstructorDef()
                             .add("name", Text.class)
-                            .add("functions", Vector.with(TypesUtils.getConstructorCodec(FunctionMetadata.class)))
+                            .add("functions", Vector.with(TypesUtils.getConstructorCodec(FunctionMetadataV0.class)))
                     , value);
         }
 
@@ -89,7 +75,7 @@ public interface Modules {
         /**
          * The functions available as FunctionMetadata
          */
-        public Vector<FunctionMetadata> getFunctions() {
+        public Vector<FunctionMetadataV0> getFunctions() {
             return this.getField("functions");
         }
 
@@ -101,11 +87,11 @@ public interface Modules {
         }
     }
 
-    class ModuleMetadata extends Struct {
-        public ModuleMetadata(Object value) {
+    class ModuleMetadataV0 extends Struct {
+        public ModuleMetadataV0(Object value) {
             super(new Types.ConstructorDef()
                             .add("name", Text.class)
-                            .add("call", CallMetadata.class)
+                            .add("call", CallMetadataV0.class)
                     , value);
         }
 
@@ -113,7 +99,7 @@ public interface Modules {
         /**
          * The calls as CallMetadata
          */
-        public CallMetadata getCall() {
+        public CallMetadataV0 getCall() {
             return this.getField("call");
         }
 
@@ -125,194 +111,16 @@ public interface Modules {
         }
     }
 
-    class StorageFunctionModifier extends Enum {
-        public StorageFunctionModifier(Object value) {
-            super(Lists.newArrayList("Optional", "Default", "Required")
-                    , value);
-        }
-
-        /**
-         * `true` if the storage entry is optional
-         */
-        public boolean isOptional() {
-            return this.toNumber() == 0;
-        }
-
-    }
-
-    class MapType extends Struct {
-        private boolean isLinked = false;
-
-        public MapType(Object value) {
-            super(new Types.ConstructorDef()
-                            .add("key", Type.class)
-                            .add("value", Type.class)
-                    , value);
-
-
-
-            if (value instanceof Storage.MapType) {
-                Boolean linked = ((Storage.MapType) value).isLinked();
-                if (linked){
-                    this.isLinked = true;
-                }
-            }
-
-            if (value != null && value instanceof MapType) {
-                if (((MapType) value).isLinked) {
-                    this.isLinked = true;
-                }
-            }
-        }
-
-        public boolean isLinked() {
-            return isLinked;
-        }
-
-        public Type getKey() {
-            return this.getField("key");
-        }
-
-        public Type getValue() {
-            return this.getField("value");
-        }
-    }
-
-
-    class PlainType extends Type {
-        public PlainType(Object value) {
-            super(value);
-        }
-    }
-
-    //export class StorageFunctionType extends EnumType<PlainType | MapType> {
-    class StorageFunctionType extends EnumType {
-        public StorageFunctionType(Object value, int index) {
-            super(new Types.ConstructorDef()
-                            .add("PlainType", PlainType.class)
-                            .add("MapType", MapType.class)
-                    , value, index, null);
-        }
-
-        public StorageFunctionType(Object value) {
-            this(value, -1);
-        }
-
-        /**
-         * `true` if the storage entry is a map
-         */
-        public boolean isMap() {
-            return this.toNumber() == 1;
-        }
-
-        /**
-         * The value as a mapped value
-         */
-        public MapType asMap() {
-            return (MapType) this.value();
-        }
-
-        /**
-         * The value as a {@link org.polkadot.types.type} value
-         */
-        //TODO 2019-05-08 1819 cast error
-        public PlainType asType() {
-            return (PlainType) this.value();
-        }
-
-        /**
-         * Returns the string representation of the value
-         */
-        @Override
-        public String toString() {
-            if (this.isMap()) {
-                MapType mapType = this.asMap();
-                if (mapType.isLinked) {
-                    return "(" + mapType.getField("value").toString() + ", Linkage<" + mapType.getField("key").toString() + ">)";
-                }
-                return mapType.getField("value").toString();
-            }
-            return this.asType().toString();
-        }
-    }
-
-    class StorageFunctionMetadataValue {
-        /**
-         * name string | Text,
-         * modifier StorageFunctionModifier | AnyNumber,
-         * type StorageFunctionType,
-         * default Bytes,
-         * documentation Vector<Text> | Array<string>
-         */
-
-        String name;
-        StorageFunctionModifier modifier;
-        StorageFunctionType type;
-        Bytes defalut;
-        Vector<Text> documentation;
-
-    }
-
-    class StorageFunctionMetadata extends Struct {
-        //  constructor (value? StorageFunctionMetadataValue | Uint8Array) {
-        public StorageFunctionMetadata(Object value) {
-            super(new Types.ConstructorDef()
-                            .add("name", Text.class)
-                            .add("modifier", StorageFunctionModifier.class)
-                            .add("type", StorageFunctionType.class)
-                            .add("default", Bytes.class)
-                            .add("documentation", Vector.with(TypesUtils.getConstructorCodec(Text.class)))
-                    , value);
-        }
-
-        public StorageFunctionType getType() {
-            return this.getField("type");
-        }
-
-        public Text getName() {
-            return this.getField("name");
-        }
-
-        public StorageFunctionModifier getModifier() {
-            return this.getField("modifier");
-        }
-
-        public Bytes getDefault() {
-            return this.getField("default");
-        }
-
-        public Vector<Text> getDocumentation() {
-            return this.getField("documentation");
-        }
-    }
-
-    class StorageMetadata extends Struct {
-        public StorageMetadata(Object value) {
-            super(new Types.ConstructorDef()
-                            .add("prefix", Text.class)
-                            .add("functions", Vector.with(TypesUtils.getConstructorCodec(StorageFunctionMetadata.class)))
-                    , value);
-        }
-
-        public Text getPrefix() {
-            return this.getField("prefix");
-        }
-
-        public Vector<StorageFunctionMetadata> getFunctions() {
-            return this.getField("functions");
-        }
-    }
-
     class RuntimeModuleMetadata extends Struct {
         public RuntimeModuleMetadata(Object value) {
             super(new Types.ConstructorDef()
                             .add("prefix", Text.class)
-                            .add("module", ModuleMetadata.class)
-                            .add("storage", Option.with(TypesUtils.getConstructorCodec(StorageMetadata.class)))
+                            .add("module", ModuleMetadataV0.class)
+                            .add("storage", Option.with(TypesUtils.getConstructorCodec(Storage.StorageMetadataV0.class)))
                     , value);
         }
 
-        public ModuleMetadata getModule() {
+        public ModuleMetadataV0 getModule() {
             return this.getField("module");
         }
 
@@ -320,10 +128,8 @@ public interface Modules {
             return this.getField("prefix");
         }
 
-        public Option<StorageMetadata> getStorage() {
+        public Option<Storage.StorageMetadataV0> getStorage() {
             return this.getField("storage");
         }
     }
-
-
 }

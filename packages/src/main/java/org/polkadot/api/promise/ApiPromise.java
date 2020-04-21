@@ -12,29 +12,29 @@ import java.util.List;
 
 /**
  * # @polkadot/api/promise
- *
+ * <p>
  * ## Overview
- *
+ * <p>
  * ApiPromise is a standard JavaScript wrapper around the RPC and interfaces on the Polkadot network. As a full Promise-based, all interface calls return Promises, including the static `.create(...)`. Subscription calls utilise `(value) => {}` callbacks to pass through the latest values.
- * 
+ * <p>
  * The API is well suited to real-time applications where either the single-shot state is needed or use is to be made of the subscription-based features of Polkadot (and Substrate) clients.
- * 
+ * <p>
  * ## Usage
- * 
+ * <p>
  * Making rpc calls -
- * 
+ * <p>
  * ```java
  * import org.polkadot.api.promise.ApiPromise;
  * // initialise via static create
  * ApiPromise api = ApiPromise.create();
  * // make a subscription to the network head
  * api.rpc.chain.subscribeNewHead((header) => {
- *     System.out.print("Chain is at ");
- *     System.out.println(header.blockNumber);
+ * System.out.print("Chain is at ");
+ * System.out.println(header.blockNumber);
  * });
  * ```
  * Subscribing to chain state -
- *
+ * <p>
  * ```java
  * import org.polkadot.api.promise.ApiPromise;
  * // initialise a provider with a specific endpoint
@@ -46,21 +46,21 @@ import java.util.List;
  * int last = 0;
  * // subscribe to the current block timestamp, updates automatically (callback provided)
  * api.query.timestamp.now((timestamp) => {
- *     int elapsed = 0;
- *     if(last > 0) elapsed = timestamp - last;
- *     last = timestamp.toNumber();
- *     System.out.printf("timestamp %d %d since last %d target", timestamp, elapsed, blockPeriod);
+ * int elapsed = 0;
+ * if(last > 0) elapsed = timestamp - last;
+ * last = timestamp.toNumber();
+ * System.out.printf("timestamp %d %d since last %d target", timestamp, elapsed, blockPeriod);
  * });
  * ```
- *
+ * <p>
  * Submitting a transaction -
- * 
+ * <p>
  * ```java
  * import org.polkadot.api.promise.ApiPromise;
- * 
+ * <p>
  * ApiPromise.create().then((api) => {
- *     int nonce = api.query.system.accountNonce(keyring.alice.address());
- * 
+ * int nonce = api.query.system.accountNonce(keyring.alice.address());
+ * <p>
  * api.tx.balances
  * // create transfer
  * .transfer(keyring.bob.address(), 12345)
@@ -68,13 +68,13 @@ import java.util.List;
  * .sign(keyring.alice, { nonce })
  * // send the transaction (optional status callback)
  * .send((status) => {
- *     System.out.print("current status ");
- *     System.out.println(status.type);
+ * System.out.print("current status ");
+ * System.out.println(status.type);
  * })
  * // retrieve the submitted extrinsic hash
  * .then((hash) => {
- *     System.out.print("submitted with hash ");
- *     System.out.println(hash);
+ * System.out.print("submitted with hash ");
+ * System.out.println(hash);
  * });
  * });
  * ```
@@ -86,21 +86,21 @@ public class ApiPromise extends ApiBase<Promise> {
     /**
      * Creates an ApiPromise instance using the supplied provider. Returns an Promise containing the actual Api instance.
      *
-     * @param provider provider that is passed to the class contructor.
-     * **Example**  
-     * 
-     * ```java
-     * import org.polkadot.api.promise.ApiPromise;
-     * 
-     * Api.create().then((api) => {
-     * int timestamp = await api.query.timestamp.now();
-     *     System.out.print("lastest block timestamp ");
-     *     System.out.println(timestamp);
-     * });
-     * ```
+     * @param iProvider provider that is passed to the class contructor.
+     *                  **Example**
+     *                  <p>
+     *                  ```java
+     *                  import org.polkadot.api.promise.ApiPromise;
+     *                  <p>
+     *                  Api.create().then((api) => {
+     *                  int timestamp = await api.query.timestamp.now();
+     *                  System.out.print("lastest block timestamp ");
+     *                  System.out.println(timestamp);
+     *                  });
+     *                  ```
      */
-        public static Promise<ApiPromise> create(IProvider iProvider) {
-            ApiPromise apiPromise = new ApiPromise(iProvider);
+    public static Promise<ApiPromise> create(IProvider iProvider) {
+        ApiPromise apiPromise = new ApiPromise(iProvider);
         return apiPromise.isReadyPromise;
     }
 
@@ -113,20 +113,20 @@ public class ApiPromise extends ApiBase<Promise> {
     /**
      * Creates an instance of the ApiPromise class
      *
-     * @param provider provider that is passed to the class contructor.
-     * 
-     * **Example**  
-     * 
-     * ```java
-     * import org.polkadot.api.promise.ApiPromise;
-     * 
-     * new Api().isReady.then((api) => {
-     * api.rpc.subscribeNewHead((header) => {
-     *   System.out.print("new block ");
-     *   System.out.println(header.blockNumber);
-     * });
-     * });
-     * ```
+     * @param iProvider provider that is passed to the class contructor.
+     *                  <p>
+     *                  **Example**
+     *                  <p>
+     *                  ```java
+     *                  import org.polkadot.api.promise.ApiPromise;
+     *                  <p>
+     *                  new Api().isReady.then((api) => {
+     *                  api.rpc.subscribeNewHead((header) => {
+     *                  System.out.print("new block ");
+     *                  System.out.println(header.blockNumber);
+     *                  });
+     *                  });
+     *                  ```
      */
     ApiPromise(IProvider iProvider) {
         super(iProvider, ApiType.PROMISE);
@@ -144,6 +144,10 @@ public class ApiPromise extends ApiBase<Promise> {
 
     @Override
     protected Promise onCall(Types.OnCallFunction method, List<Object> params, boolean needCallback, IRpcFunction.SubscribeCallback callback) {
+        return getPromise(method, params, callback);
+    }
+
+    public static Promise getPromise(Types.OnCallFunction method, List<Object> params, IRpcFunction.SubscribeCallback callback) {
         List<Object> args = Lists.newArrayList();
         if (params != null) {
             args.addAll(params);

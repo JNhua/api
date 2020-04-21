@@ -142,7 +142,7 @@ public class CreateType {
             JSONObject parsed = JSONObject.parseObject(type);
             Set<String> keys = parsed.keySet();
 
-            if (keys.size() == 1 && keys.stream().findFirst().get().equals("_enum")) {
+            if (keys.size() == 1 && "_enum".equals(keys.stream().findFirst().get())) {
                 Object details = parsed.get("_enum");
                 value.info = TypeDefInfo.Enum;
                 // not as pretty, but remain compatible with oo7 for both struct and Array types

@@ -1,47 +1,54 @@
 package org.polkadot.type.storage;
 
-import org.polkadot.types.metadata.v0.MetadataV0;
-import org.polkadot.types.metadata.v0.Modules;
-import org.polkadot.types.primitive.Text;
+import org.polkadot.types.metadata.Metadata;
+import org.polkadot.types.metadata.latest.Modules;
+import org.polkadot.types.metadata.latest.Storage;
 import org.polkadot.utils.Utils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Extend a storage object with the storage modules & module functions present
- * in the metadata.
- *
- * @param storage  - A storage object to be extended.
- * @param metadata - The metadata to extend the storage object against.
- */
 public class FromMetadata {
-    public static Types.Storage fromMetadata(MetadataV0 metadata) {
+    /**
+     * Extend a storage object with the storage modules & module functions present
+     * in the metadata.
+     *
+     * @param metadata - The metadata to extend the storage object against.
+     */
+    public static Types.Storage fromMetadata(Metadata metadata) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
 
         Map<String, Types.ModuleStorage> storageModules = new HashMap<>();
 
-        for (Modules.RuntimeModuleMetadata moduleMetadata : metadata.getModules()) {
+        for (Modules.ModuleMetadataLatest moduleMetadata : metadata.asLatest().getModules()) {
             if (moduleMetadata.getStorage().isNone()) {
                 continue;
             }
-            Modules.StorageMetadata storageMetadata = moduleMetadata.getStorage().unwrap();
 
-            Text prefix = storageMetadata.getPrefix();
+            final String section = Utils.stringCamelCase(moduleMetadata.getName().toString());
+            final Storage.StorageMetadataLatest unwrapped = moduleMetadata.getStorage().unwrap();
+            final String prefix = unwrapped.getPrefix().toString();
 
             Types.ModuleStorage newModule = new Types.ModuleStorage();
             // For access, we change the index names, i.e. Balances.FreeBalance -> balances.freeBalance
-            for (Modules.StorageFunctionMetadata func : storageMetadata.getFunctions()) {
+            for (Storage.StorageEntryMetadataLatest func : unwrapped.getItems()) {
+                final String method = func.getName().toString();
                 newModule.addFunction(
-                        Utils.stringLowerFirst(func.getName().toString()),
-                        CreateFunction.createFunction(prefix.toString(), func.getName().toString(), func, false, null)
+                        Utils.stringLowerFirst(method),
+                        CreateFunction.createFunction(new CreateFunction.CreateItemFn(func, method, prefix, section), new CreateFunction.CreateItemOptions(null, metadata.getVersion(), false))
                 );
             }
 
-            storageModules.put(Utils.stringLowerFirst(prefix.toString()), newModule);
+            storageModules.put(Utils.stringLowerFirst(prefix), newModule);
         }
 
         return new Types.Storage() {
+            @Override
+            public Types.ModuleStorage substrate() {
+                return Substrate.substrate;
+            }
+
             Map<String, Types.ModuleStorage> modules = storageModules;
 
             @Override
@@ -52,11 +59,6 @@ public class FromMetadata {
             @Override
             public Set<String> sectionNames() {
                 return modules.keySet();
-            }
-
-            @Override
-            public Types.ModuleStorage substrate() {
-                return Substrate.substrate;
             }
         };
     }

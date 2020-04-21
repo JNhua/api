@@ -35,7 +35,6 @@ public class E02_ListenToBlocks {
             Promise<IRpcFunction.Unsubscribe<Promise>> invoke = api.rpc().chain().function("subscribeNewHead").invoke(
                     (IRpcFunction.SubscribeCallback<Header>) (Header header) ->
                     {
-                        //System.out.println("Chain is at block: " + JSON.toJSONString(header));
                         System.out.println("Chain is at block: " + header.getBlockNumber());
                     });
             return invoke;

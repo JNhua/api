@@ -13,6 +13,7 @@ import org.polkadot.types.Types.SignatureOptions;
 import org.polkadot.types.primitive.Method;
 import org.polkadot.types.primitive.StorageKey;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 public interface Types {
@@ -55,7 +56,7 @@ public interface Types {
         public abstract ApplyResult hash(Object arg);
         //public abstract Promise<Hash> hash(Object arg);
 
-        public abstract String key(Object arg);
+        public abstract String key(Object arg) throws InvocationTargetException, IllegalAccessException;
 
         public abstract ApplyResult size(Object arg);
     }

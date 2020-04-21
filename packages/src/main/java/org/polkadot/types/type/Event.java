@@ -3,12 +3,10 @@ package org.polkadot.types.type;
 import com.google.common.primitives.UnsignedBytes;
 import org.apache.commons.lang3.ArrayUtils;
 import org.polkadot.types.Types;
-import org.polkadot.types.codec.CreateType;
-import org.polkadot.types.codec.Struct;
-import org.polkadot.types.codec.Tuple;
-import org.polkadot.types.codec.U8aFixed;
-import org.polkadot.types.metadata.v0.Events;
-import org.polkadot.types.metadata.v0.MetadataV0;
+import org.polkadot.types.codec.*;
+import org.polkadot.types.metadata.latest.MetadataLatest;
+import org.polkadot.types.metadata.latest.Events;
+import org.polkadot.types.metadata.latest.Modules;
 import org.polkadot.types.primitive.Null;
 import org.polkadot.utils.MapUtils;
 import org.polkadot.utils.Utils;
@@ -34,7 +32,7 @@ public class Event extends Struct {
      * Wrapper for the actual data that forms part of an Event
      */
     public static class EventData extends Tuple {
-        private Events.EventMetadata meta;
+        private Events.EventMetadataLatest meta;
         private String method;
         private String section;
         private List<CreateType.TypeDef> typeDef;
@@ -42,7 +40,7 @@ public class Event extends Struct {
         public EventData(List<Types.ConstructorCodec> types,
                          byte[] value,
                          List<CreateType.TypeDef> typeDef,
-                         Events.EventMetadata meta,
+                         Events.EventMetadataLatest meta,
                          String section, String method) {
             super(new Types.ConstructorDef(types), value);
 
@@ -55,7 +53,7 @@ public class Event extends Struct {
         }
 
 
-        public Events.EventMetadata getMeta() {
+        public Events.EventMetadataLatest getMeta() {
             return meta;
         }
 
@@ -74,7 +72,7 @@ public class Event extends Struct {
         public static class Builder implements Types.ConstructorCodec<EventData> {
 
             private List<Types.ConstructorCodec> types;
-            private Events.EventMetadata meta;
+            private Events.EventMetadataLatest meta;
             private String method;
             private String section;
             private List<CreateType.TypeDef> typeDef;
@@ -82,7 +80,7 @@ public class Event extends Struct {
 
             public Builder(List<Types.ConstructorCodec> types,
                            List<CreateType.TypeDef> typeDef,
-                           Events.EventMetadata meta,
+                           Events.EventMetadataLatest meta,
                            String section, String method) {
                 this.types = types;
                 this.meta = meta;
@@ -153,22 +151,25 @@ public class Event extends Struct {
 
     // This is called/injected by the API on init, allowing a snapshot of
     // the available system events to be used in lookups
-    public static void injectMetadata(MetadataV0 metadata) {
-        for (int sectionIndex = 0; sectionIndex < metadata.getEvents().size(); sectionIndex++) {
-            Events.OuterEventMetadataEvent section = metadata.getEvents().get(sectionIndex);
-
+    public static void injectMetadata(MetadataLatest metadata) {
+        for (int sectionIndex = 0; sectionIndex < metadata.getModules().size(); sectionIndex++) {
+            Modules.ModuleMetadataLatest section = metadata.getModules().get(sectionIndex);
             String sectionName = Utils.stringCamelCase(section.getName().toString());
 
-            for (int methodIndex = 0; methodIndex < section.getEvents().size(); methodIndex++) {
-                Events.EventMetadata meta = section.getEvents().get(methodIndex);
-                String methodName = meta.getName().toString();
+            if(section.getEvents().isSome())
+            {
+                Vector<Events.EventMetadataLatest> eventMetadataLatest = section.getEvents().unwrap();
+                for (int methodIndex = 0; methodIndex < eventMetadataLatest.size(); methodIndex++) {
+                    Events.EventMetadataLatest meta = eventMetadataLatest.get(methodIndex);
+                    String methodName = meta.getName().toString();
 
-                byte[] eventIndex = new byte[]{UnsignedBytes.checkedCast(sectionIndex), UnsignedBytes.checkedCast(methodIndex)};
-                List<CreateType.TypeDef> typeDef = meta.getArguments().stream().map(
-                        arg -> CreateType.getTypeDef(arg.toString())
-                ).collect(Collectors.toList());
-                List<Types.ConstructorCodec> types = typeDef.stream().map(def -> CreateType.getTypeClass(def)).collect(Collectors.toList());
-                EventTypes.put(Arrays.toString(eventIndex), new EventData.Builder(types, typeDef, meta, sectionName, methodName));
+                    byte[] eventIndex = new byte[]{UnsignedBytes.checkedCast(sectionIndex), UnsignedBytes.checkedCast(methodIndex)};
+                    List<CreateType.TypeDef> typeDef = meta.getArguments().stream().map(
+                            arg -> CreateType.getTypeDef(arg.toString())
+                    ).collect(Collectors.toList());
+                    List<Types.ConstructorCodec> types = typeDef.stream().map(def -> CreateType.getTypeClass(def)).collect(Collectors.toList());
+                    EventTypes.put(Arrays.toString(eventIndex), new EventData.Builder(types, typeDef, meta, sectionName, methodName));
+                }
             }
         }
     }
@@ -191,7 +192,7 @@ public class Event extends Struct {
     /**
      * The EventMetadata with the documentation
      */
-    public Events.EventMetadata getMeta() {
+    public Events.EventMetadataLatest getMeta() {
         return this.getData().meta;
     }
 

@@ -1,7 +1,7 @@
 package org.polkadot.types;
 
 import org.polkadot.types.codec.U8a;
-import org.polkadot.types.metadata.v0.Modules;
+import org.polkadot.types.metadata.latest.Calls;
 import org.polkadot.types.primitive.Method;
 
 import java.math.BigInteger;
@@ -146,7 +146,7 @@ export type RegistryTypes = {
 
         boolean hasOrigin();
 
-        Modules.FunctionMetadata getMeta();
+        Calls.FunctionMetadataLatest getMeta();
     }
 
 

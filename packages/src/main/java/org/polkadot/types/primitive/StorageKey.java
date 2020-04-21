@@ -5,8 +5,9 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.polkadot.direct.IFunction;
 import org.polkadot.types.codec.CodecUtils;
 import org.polkadot.types.codec.U8a;
-import org.polkadot.types.metadata.v0.Modules;
+import org.polkadot.types.metadata.latest.Storage;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 /**
@@ -15,29 +16,23 @@ import java.util.List;
  */
 public class StorageKey extends Bytes {
 
-    public static abstract class StorageFunction implements IFunction<byte[]> {
-        public abstract byte[] apply(Object... args);
+    public static abstract class StorageFunction<R> implements IFunction<R> {
+        public abstract R apply(Object... args) throws InvocationTargetException, IllegalAccessException;
 
-        protected Modules.StorageFunctionMetadata meta;
+        protected Storage.StorageEntryMetadataLatest meta;
         protected String method;
         protected String section;
+        protected String prefix;
 
         public abstract Object toJson();
 
-        StorageKey headKey;
-        //(arg?: any): Uint8Array;
-        //      meta: StorageFunctionMetadata;
-        //      method: string;
-        //      section: string;
-        //      toJSON: () => any;
-        //      headKey?: Uint8Array;
+        StorageKey iterKey;
 
-
-        public Modules.StorageFunctionMetadata getMeta() {
+        public Storage.StorageEntryMetadataLatest getMeta() {
             return meta;
         }
 
-        public void setMeta(Modules.StorageFunctionMetadata meta) {
+        public void setMeta(Storage.StorageEntryMetadataLatest meta) {
             this.meta = meta;
         }
 
@@ -57,20 +52,28 @@ public class StorageKey extends Bytes {
             this.section = section;
         }
 
-        public StorageKey getHeadKey() {
-            return headKey;
+        public StorageKey getIterKey() {
+            return iterKey;
         }
 
-        public void setHeadKey(StorageKey headKey) {
-            this.headKey = headKey;
+        public void setIterKey(StorageKey iterKey) {
+            this.iterKey = iterKey;
+        }
+
+        public String getPrefix() {
+            return prefix;
+        }
+
+        public void setPrefix(String prefix) {
+            this.prefix = prefix;
         }
     }
 
 
-    private Modules.StorageFunctionMetadata meta;
+    private Storage.StorageEntryMetadataLatest meta;
     private String outputType;
 
-    public StorageKey(Object value) {
+    public StorageKey(Object value) throws InvocationTargetException, IllegalAccessException {
         super(decodeStorageKey(value));
 
         this.meta = getMeta(value);
@@ -89,7 +92,7 @@ public class StorageKey extends Bytes {
         return null;
     }
 
-    static Modules.StorageFunctionMetadata getMeta(Object value) {
+    static Storage.StorageEntryMetadataLatest getMeta(Object value) {
         if (value instanceof StorageKey) {
             return ((StorageKey) value).meta;
         } else if (value instanceof StorageFunction) {
@@ -101,9 +104,9 @@ public class StorageKey extends Bytes {
         return null;
     }
 
-    static Object decodeStorageKey(Object value) {
+    static Object decodeStorageKey(Object value) throws InvocationTargetException, IllegalAccessException {
         if (value instanceof IFunction) {
-            byte[] apply = ((StorageFunction) value).apply();
+            Object apply = ((StorageFunction<Object>) value).apply();
             return new U8a(apply);
         } else if (value.getClass().isArray()) {
             List<Object> elements = CodecUtils.arrayLikeToList(value);
@@ -119,11 +122,10 @@ public class StorageKey extends Bytes {
     }
 
 
-
     /**
      * The metadata or `null` when not available
      */
-    public Modules.StorageFunctionMetadata getMeta() {
+    public Storage.StorageEntryMetadataLatest getMeta() {
         return meta;
     }
 

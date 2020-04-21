@@ -62,8 +62,8 @@ public class Digest extends Struct {
     /**
      * Log item indicating a sealing event
      */
-    public static class Seal extends Tuple {
-        public Seal(Object value) {
+    public static class SealV0 extends Tuple {
+        public SealV0(Object value) {
             super(
                     new Types.ConstructorDef()
                             .add("U64", U64.class)
@@ -132,6 +132,28 @@ public class Digest extends Struct {
         }
     }
 
+    public static class Seal extends Tuple{
+        public Seal(Object value){
+            super(
+                    new Types.ConstructorDef()
+                            .add("U32", U32.class)
+                            .add("Bytes", Bytes.class)
+                    , value
+            );
+        }
+    }
+
+    public static class PreRuntime extends Tuple{
+        public PreRuntime(Object value){
+            super(
+                    new Types.ConstructorDef()
+                            .add("U32", U32.class)
+                            .add("Bytes", Bytes.class)
+                    , value
+            );
+        }
+    }
+
     /**
      * A {@link org.polkadot.types.codec.EnumType} the specifies the specific item in the logs of a Digest
      */
@@ -143,8 +165,10 @@ public class Digest extends Struct {
                             .add("Other", Other.class)// Position 0, as per Rust (encoding control)
                             .add("AuthoritiesChange", Vector.with(TypesUtils.getConstructorCodec(AuthorityId.class)))
                             .add("ChangesTrieRoot", ChangesTrieRoot.class)
-                            .add("Seal", Seal.class)
+                            .add("SealV0", SealV0.class)
                             .add("Consensus", Consensus.class)
+                            .add("Seal", Seal.class)
+                            .add("PreRuntime", PreRuntime.class)
                     , value, -1, null
             );
         }
@@ -181,22 +205,22 @@ public class Digest extends Struct {
         /**
          * Returns the item as a Seal
          */
-        public Seal getAsSeal() {
-            return (Seal) this.value();
+        public SealV0 getAsSeal() {
+            return (SealV0) this.value();
         }
 
         /**
          * Returns true on Consensus
          */
         public boolean isConsensus() {
-            return this.getType().equals("Consensus");
+            return "Consensus".equals(this.getType());
         }
 
         /**
          * Returns true on Seal
          */
         public boolean isSeal() {
-            return this.getType().equals("Seal");
+            return "Seal".equals(this.getType());
         }
 
     }

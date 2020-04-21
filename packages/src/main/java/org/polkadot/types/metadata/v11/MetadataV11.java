@@ -3,16 +3,11 @@ package org.polkadot.types.metadata.v11;
 import com.google.common.collect.Lists;
 import org.polkadot.types.Types.ConstructorDef;
 import org.polkadot.types.TypesUtils;
-import org.polkadot.types.codec.Option;
 import org.polkadot.types.codec.Struct;
 import org.polkadot.types.codec.Vector;
-import org.polkadot.types.metadata.MagicNumber;
 import org.polkadot.types.metadata.MetadataUtils;
 import org.polkadot.types.metadata.Types;
-import org.polkadot.types.metadata.v1.Calls;
-import org.polkadot.types.metadata.v1.Events;
 import org.polkadot.types.primitive.Text;
-import org.polkadot.types.primitive.U32;
 import org.polkadot.types.primitive.U8;
 
 import java.util.ArrayList;
@@ -21,75 +16,8 @@ import java.util.stream.Collectors;
 
 public class MetadataV11 extends Struct implements Types.MetadataInterface {
 
-
-    /**
-     * The definition of a module in the system
-     */
-    public static class MetadataModule extends Struct {
-        public MetadataModule(Object value) {
-            super(new ConstructorDef()
-                            .add("name", Text.class)
-                            .add("storage", Option.with(TypesUtils.getConstructorCodec(Storage.MetadataStorageV11.class)))
-                            .add("calls", Option.with(Vector.with(TypesUtils.getConstructorCodec(Calls.MetadataCall.class))))
-                            .add("events", Option.with(Vector.with(TypesUtils.getConstructorCodec(Events.MetadataEvent.class))))
-                            .add("constants", Vector.with(TypesUtils.getConstructorCodec(Constants.MetadataConstant.class)))
-                            .add("errors", Vector.with(TypesUtils.getConstructorCodec(Errors.MetadataError.class)))
-                    , value);
-        }
-
-
-        /**
-         * the module calls
-         */
-        public Option<Vector<Calls.MetadataCall>> getCalls() {
-            return this.getField("calls");
-        }
-
-        /**
-         * the module events
-         */
-        public Option<Vector<Events.MetadataEvent>> getEvents() {
-            return this.getField("events");
-        }
-
-        /**
-         * the module name
-         */
-        public Text getName() {
-            return this.getField("name");
-        }
-
-        /**
-         * the module prefix
-         */
-        public Text getPrefix() {
-            return this.getField("prefix");
-        }
-
-        /**
-         * the associated module storage
-         */
-        public Option<Vector<Storage.MetadataStorageV11>> getStorage() {
-            return this.getField("storage");
-        }
-
-        /**
-         * the module constants
-         */
-        public Option<Vector<Constants.MetadataConstant>> getConstants() {
-            return this.getField("constants");
-        }
-
-        /**
-         * the module errors
-         */
-        public Option<Vector<Errors.MetadataError>> getErrors() {
-            return this.getField("errors");
-        }
-    }
-
-    public static class MetadataExtrinsic extends Struct {
-        public MetadataExtrinsic(Object value) {
+    public static class MetadataExtrinsicV11 extends Struct {
+        public MetadataExtrinsicV11(Object value) {
             super(new ConstructorDef()
                             .add("version", U8.class)
                             .add("signedExtensions", Vector.with(TypesUtils.getConstructorCodec(Text.class)))
@@ -99,14 +27,14 @@ public class MetadataV11 extends Struct implements Types.MetadataInterface {
         /**
          * the version
          */
-        public U32 getVersion() {
+        public U8 getVersion() {
             return this.getField("version");
         }
 
         /**
          * the signedExtensions
          */
-        public Option<Vector<Text>> getSignedExtensions() {
+        public Vector<Text> getSignedExtensions() {
             return this.getField("signedExtensions");
         }
     }
@@ -114,19 +42,23 @@ public class MetadataV11 extends Struct implements Types.MetadataInterface {
 
     public MetadataV11(Object value) {
         super(new ConstructorDef()
-                        .add("modules", Vector.with(TypesUtils.getConstructorCodec(MetadataModule.class)))
-                        .add("extrinsic", TypesUtils.getConstructorCodec(MetadataExtrinsic.class))
+                        .add("modules", Vector.with(TypesUtils.getConstructorCodec(Modules.ModuleMetadataV11.class)))
+                        .add("extrinsic", TypesUtils.getConstructorCodec(MetadataExtrinsicV11.class))
                 , value);
     }
 
     /**
      * The associated modules for this structure
      */
-    Vector<MetadataModule> getModules() {
+    Vector<Modules.ModuleMetadataV11> getModules() {
         return this.getField("modules");
     }
 
-    private List getCallNames() {
+    MetadataExtrinsicV11 getExtrinsic(){
+        return this.getField("extrinsic");
+    }
+
+    protected List getCallNames() {
         return this.getModules().stream().map(
                 (mod) -> {
                     return mod.getCalls().isNone()
@@ -144,15 +76,15 @@ public class MetadataV11 extends Struct implements Types.MetadataInterface {
         ).collect(Collectors.toList());
     }
 
-    private List getEventNames() {
+    protected List getEventNames() {
         return this.getModules().stream().map(
                 (mod) -> {
                     return mod.getEvents().isNone()
                             ? Lists.newArrayList()
                             : mod.getEvents().unwrap().stream().map(
                             (event) -> {
-                                return event.getArgs().stream().map(
-                                        (arg) -> arg.toString()
+                                return event.getArguments().stream().map(
+                                        Text::toString
                                 ).collect(Collectors.toList());
                             }
                     ).collect(Collectors.toList());
@@ -160,33 +92,26 @@ public class MetadataV11 extends Struct implements Types.MetadataInterface {
         ).collect(Collectors.toList());
     }
 
-
-    private List getStorageNames() {
+    protected List getStorageNames() {
         return this.getModules().stream().map(
                 (mod) -> {
                     return mod.getStorage().isNone()
                             ? Lists.newArrayList()
-                            : mod.getStorage().unwrap().stream().map(
-                            (storage) -> {
-                                return storage.getItems().stream().map(
-                                        (fn) -> {
-                                            return fn.getType().isMap()
-                                                    ? Lists.newArrayList(fn.getType().asMap().getKey().toString(), fn.getType().asMap().getValue().toString())
-                                                    : Lists.newArrayList(fn.getType().asType().toString());
-                                        }
-                                ).collect(Collectors.toList());
+                            : mod.getStorage().unwrap().getItems().stream().map(
+                            (fn) -> {
+                                return fn.getType().isMap()
+                                        ? Lists.newArrayList(fn.getType().asMap().getKey().toString(), fn.getType().asMap().getValue().toString())
+                                        : Lists.newArrayList(fn.getType().asPlain().toString());
                             }
                     ).collect(Collectors.toList());
                 }
         ).collect(Collectors.toList());
     }
 
-    private List getConstantNames() {
+    protected List getConstantNames() {
         return this.getModules().stream().map(
                 (mod) -> {
-                    return mod.getConstants().isNone()
-                            ? Lists.newArrayList()
-                            : mod.getConstants().unwrap().stream().map(
+                    return mod.getConstants().stream().map(
                             (constant) -> constant.getType().toString()
                     ).collect(Collectors.toList());
                 }

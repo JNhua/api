@@ -100,7 +100,7 @@ public class Type extends Text {
                         || end + 14 < 0 || end + 14 >= value.length()) {
                     continue;
                 }
-                if (value.substring(end, end + 14).equals(" as HasCompact")) {
+                if (" as HasCompact".equals(value.substring(end, end + 14))) {
                     String substring = value.substring(index + 1, end);
                     value = "Compact<" + substring + ">";
                 }
@@ -158,7 +158,7 @@ public class Type extends Text {
         return value -> {
             for (int index = 0; index < value.length() && index + 7 <= value.length(); index++) {
 
-                if (value.substring(index, index + 7).equals("PairOf<")) {
+                if ("PairOf<".equals(value.substring(index, index + 7))) {
                     int start = index + 7;
                     int end = findClosing(value, start);
                     String type = value.substring(start, end);

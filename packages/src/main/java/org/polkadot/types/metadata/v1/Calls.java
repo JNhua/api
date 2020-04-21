@@ -4,31 +4,14 @@ import org.polkadot.types.Types;
 import org.polkadot.types.TypesUtils;
 import org.polkadot.types.codec.Struct;
 import org.polkadot.types.codec.Vector;
+import org.polkadot.types.metadata.v0.Modules;
 import org.polkadot.types.primitive.Text;
-import org.polkadot.types.primitive.Type;
 
 public interface Calls {
 
-    class MetadataCallArg extends Struct {
-        public MetadataCallArg(Object value) {
-            super(new Types.ConstructorDef()
-                            .add("name", Text.class)
-                            .add("type", Type.class)
-                    , value);
-        }
-
-        /**
-         * The argument name
-         */
-        public Text getName() {
-            return this.getField("name");
-        }
-
-        /**
-         * The {@link org.polkadot.types.type}
-         */
-        public Type getType() {
-            return this.getField("type");
+    class FunctionArgumentMetadataV1 extends Modules.FunctionArgumentMetadataV0 {
+        public FunctionArgumentMetadataV1(Object value) {
+            super(value);
         }
     }
 
@@ -36,37 +19,29 @@ public interface Calls {
     /**
      * The definition of a call
      */
-    class MetadataCall extends Struct {
-        public MetadataCall(Object value) {
+    class FunctionMetadataV1 extends Struct {
+        public FunctionMetadataV1(Object value) {
             super(new Types.ConstructorDef()
                             // id: u16,
                             .add("name", Text.class)
-                            .add("args", Vector.with(TypesUtils.getConstructorCodec(MetadataCallArg.class)))
-                            .add("docs", Vector.with(TypesUtils.getConstructorCodec(Text.class)))
+                            .add("args", Vector.with(TypesUtils.getConstructorCodec(FunctionArgumentMetadataV1.class)))
+                            .add("documentation", Vector.with(TypesUtils.getConstructorCodec(Text.class)))
                     , value);
         }
-
 
         /**
          * The MetadataCallArg for arguments
          */
-        public Vector<MetadataCallArg> getArgs() {
+        public Vector<FunctionArgumentMetadataV1> getArgs() {
             return this.getField("args");
         }
 
         /**
          * The {@link org.polkadot.types.primitive.Text} documentation
          */
-        public Vector<Text> getDocs() {
-            return this.getField("docs");
+        public Vector<Text> getDocumentation() {
+            return this.getField("documentation");
         }
-
-        // /**
-        //  * The call function id
-        //  */
-        // get id () u16 {
-        //   return this.getField("id") as u16;
-        // }
 
         /**
          * The call name

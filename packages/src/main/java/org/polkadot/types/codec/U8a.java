@@ -23,6 +23,9 @@ public class U8a implements Codec {
         raw = decodeU8a(value);
     }
 
+    public U8a(){
+    }
+
     private static byte[] decodeU8a(Object value) {
         if (Utils.isU8a(value)) {
             return (byte[]) value;

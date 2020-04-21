@@ -3,15 +3,21 @@ package org.polkadot.types.metadata;
 import org.polkadot.types.Types.ConstructorDef;
 import org.polkadot.types.codec.EnumType;
 import org.polkadot.types.codec.Struct;
+import org.polkadot.types.metadata.latest.MetadataLatest;
 import org.polkadot.types.metadata.v0.MetadataV0;
+import org.polkadot.types.metadata.v0.ToV1;
 import org.polkadot.types.metadata.v1.MetadataV1;
-import org.polkadot.types.metadata.v1.ToV0;
+import org.polkadot.types.metadata.v1.ToV2;
 import org.polkadot.types.metadata.v11.MetadataV11;
+import org.polkadot.types.metadata.v11.ToLatest;
 import org.polkadot.types.metadata.v2.MetadataV2;
-import org.polkadot.types.metadata.v2.ToV1;
+import org.polkadot.types.metadata.v2.ToV3;
 import org.polkadot.types.metadata.v3.MetadataV3;
-import org.polkadot.types.metadata.v3.ToV2;
+import org.polkadot.types.metadata.v3.ToV11;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -19,7 +25,6 @@ import java.util.List;
  */
 public class MetadataVersioned extends Struct implements Types.MetadataInterface {
 
-    //class MetadataEnum extends EnumType<Null | MetadataV1 | MetadataV2> {
     public static class MetadataEnum extends EnumType<Types.MetadataInterface> {
 
         public MetadataEnum(Object value) {
@@ -77,6 +82,12 @@ public class MetadataVersioned extends Struct implements Types.MetadataInterface
             return ((MetadataV11) this.value());
         }
 
+        /**
+         * Returns the wrapped values as a latest version object
+         */
+        public MetadataLatest asLatest () {
+            return ((MetadataLatest) this.value());
+        }
 
         /**
          * The version this metadata represents
@@ -87,17 +98,13 @@ public class MetadataVersioned extends Struct implements Types.MetadataInterface
     }
 
 
-    private MetadataV0 convertedV0;
-    private MetadataV1 convertedV1;
-    private MetadataV2 convertedV2;
+    private static HashMap<Integer, Struct> converted = new HashMap<>();
 
     public MetadataVersioned(Object value) {
         super(new ConstructorDef()
                         .add("magicNumber", MagicNumber.class)
                         .add("metadata", MetadataEnum.class)
                 , value);
-
-
     }
 
     /**
@@ -114,78 +121,78 @@ public class MetadataVersioned extends Struct implements Types.MetadataInterface
         return this.getField("metadata");
     }
 
+    private boolean assertVersion(int version) {
+        assert (this.getVersion() <= version) : "Cannot convert metadata from v" + this.getVersion() + " to v" + version;
+
+        return this.getVersion() == version;
+    }
+
+    @FunctionalInterface
+    private interface VersionUpgrade<T, F extends Struct & Types.MetadataInterface> {
+        T fromPrev(F input);
+    }
+
+    private <T extends Struct & Types.MetadataInterface> Struct asVersion(int version, VersionUpgrade versionUpgrade) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        final String asCurr = "asV" + version;
+        final String asPrev = "asV" + (version - 1);
+
+        if (this.assertVersion(version)) {
+            Method metadataAsVersion = this.getMetadata().getClass().getMethod(asCurr);
+
+            return (Struct) metadataAsVersion.invoke(this.getMetadata());
+        }
+
+        if (!converted.containsKey(version)) {
+            Method metadataAsVersion = this.getClass().getMethod(asPrev);
+            T input = (T) metadataAsVersion.invoke(this);
+            converted.put(version, (Struct) versionUpgrade.fromPrev(input));
+        }
+
+        return converted.get(version);
+    }
+
     /**
      * Returns the wrapped values as a V0 object
      */
     public MetadataV0 asV0() {
-        if (this.getVersion() == 0) {
-            return this.getMetadata().asV0();
-        }
+        this.assertVersion(0);
 
-        if (this.convertedV0 == null) {
-            this.convertedV0 = ToV0.toV0(this.asV1());
-        }
-
-        return this.convertedV0;
+        return this.getMetadata().asV0();
     }
-
 
     /**
      * Returns the wrapped values as a V1 object
      */
-    public MetadataV1 asV1() {
-
-        if (this.getVersion() == 1) {
-            return this.getMetadata().asV1();
-        }
-
-        int version = this.getVersion();
-        assert (this.getVersion() == 2 || this.getVersion() == 3) : "Cannot convert metadata from v" + this.getVersion() + " to v1";
-
-        if (this.convertedV1 == null) {
-            if (version == 3) {
-                this.convertedV1 = ToV1.toV1(this.asV2());
-            }
-            if (version == 2) {
-                this.convertedV1 = ToV1.toV1(this.getMetadata().asV2());
-            }
-        }
-
-        return this.convertedV1;
+    public MetadataV1 asV1() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        return (MetadataV1) this.asVersion(1, (input) -> ToV1.toV1((MetadataV0) input));
     }
 
     /**
      * Returns the wrapped values as a V2 object
      */
-    public MetadataV2 asV2() {
-
-        if (this.getVersion() == 2) {
-            return this.getMetadata().asV2();
-        }
-
-        assert this.getVersion() == 3 : "Cannot convert metadata from v" + this.getVersion() + " to v2";
-
-        if (this.convertedV2 == null) {
-            this.convertedV2 = ToV2.toV2(this.getMetadata().asV3());
-        }
-
-        return this.convertedV2;
+    public MetadataV2 asV2() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        return (MetadataV2) this.asVersion(2, (input) -> ToV2.toV2((MetadataV1) input));
     }
-
 
     /**
      * Returns the wrapped values as a V3 object
      */
-    public MetadataV3 asV3() {
-        return this.getMetadata().asV3();
+    public MetadataV3 asV3() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        return (MetadataV3) this.asVersion(3, (input) -> ToV3.toV3((MetadataV2) input));
     }
 
     /**
      * Returns the wrapped values as a V11 object
      */
-    public MetadataV11 asV11() {
-        assert this.getVersion() == 11 : "Cannot convert metadata from v" + this.getVersion() + " to v11";
-        return this.getMetadata().asV11();
+    public MetadataV11 asV11() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        return (MetadataV11) this.asVersion(11, (input) -> ToV11.toV11((MetadataV3) input));
+    }
+
+    /**
+     * Returns the wrapped values as a latest version object
+     */
+    public MetadataLatest asLatest() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        return (MetadataLatest) this.asVersion(12, (input) -> ToLatest.toLatest((MetadataV11) input));
     }
 
 

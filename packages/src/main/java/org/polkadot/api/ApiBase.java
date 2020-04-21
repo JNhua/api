@@ -38,12 +38,14 @@ import org.polkadot.types.type.Event;
 import org.polkadot.types.type.Hash;
 import org.polkadot.utils.Utils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.polkadot.api.promise.ApiPromise.getPromise;
 import static org.polkadot.type.extrinsics.FromMetadata.fromMetadata;
 
 public abstract class ApiBase<ApplyResult> implements Types.ApiBaseInterface<ApplyResult> {
@@ -215,15 +217,7 @@ public abstract class ApiBase<ApplyResult> implements Types.ApiBaseInterface<App
     private OnCallDefinition<Promise> promiseOnCall = new OnCallDefinition<Promise>() {
         @Override
         public Promise apply(OnCallFunction method, List<Object> params, boolean needCallback, IRpcFunction.SubscribeCallback callback) {
-            List<Object> args = Lists.newArrayList();
-            if (params != null) {
-                args.addAll(params);
-            }
-
-            if (callback != null) {
-                args.add(callback);
-            }
-            return method.apply(args.toArray(new Object[0]));
+            return getPromise(method, params, callback);
         }
     };
 
@@ -339,10 +333,8 @@ public abstract class ApiBase<ApplyResult> implements Types.ApiBaseInterface<App
             ApiBase.this.runtimeVersion = (RuntimeVersion) results.get(1);
             ApiBase.this.genesisHash = (Hash) results.get(2);
 
-            //    const extrinsics = extrinsicsFromMeta(this.runtimeMetadata.asV0);
-            //    const storage = storageFromMeta(this.runtimeMetadata.asV0);
-            Method.ModulesWithMethods modulesWithMethods = fromMetadata(ApiBase.this.runtimeMetadata.asV0());
-            Storage storage = FromMetadata.fromMetadata(ApiBase.this.runtimeMetadata.asV0());
+            Method.ModulesWithMethods modulesWithMethods = fromMetadata(ApiBase.this.runtimeMetadata.asLatest());
+            Storage storage = FromMetadata.fromMetadata(ApiBase.this.runtimeMetadata);
 
             ApiBase.this.oriStorage = storage;
             ApiBase.this.storage = decorateStorage(storage, this::onCall);
@@ -358,11 +350,8 @@ public abstract class ApiBase<ApplyResult> implements Types.ApiBaseInterface<App
             this.promisApi.derive = decorateDerive(this.promisApi, this.promiseOnCall);
 
             // only inject if we are not a clone (global init)
-            //if (this.options.source != null) {
-            Event.injectMetadata(this.runtimeMetadata.asV0());
+//            Event.injectMetadata(this.runtimeMetadata.asLatest());
             Method.injectMethods(modulesWithMethods);
-            //}
-            //this.emit(IProvider.ProviderInterfaceEmitted.ready, this);
 
             return Promise.value(true);
         })._catch((err) -> {
@@ -628,7 +617,7 @@ public abstract class ApiBase<ApplyResult> implements Types.ApiBaseInterface<App
     protected static abstract class StorageOnCallFunction implements OnCallFunction {
     }
 
-    private <ApplyResult> QueryableStorageFunction<ApplyResult> decorateStorageEntry(StorageKey.StorageFunction storageMethod, OnCallDefinition<ApplyResult> onCallDefinition) {
+    private <ApplyResult> QueryableStorageFunction<ApplyResult> decorateStorageEntry(StorageKey.StorageFunction<byte[]> storageMethod, OnCallDefinition<ApplyResult> onCallDefinition) {
 
         QueryableStorageFunction<ApplyResult> queryableStorageFunction = new QueryableStorageFunction<ApplyResult>() {
             @Override
@@ -647,7 +636,7 @@ public abstract class ApiBase<ApplyResult> implements Types.ApiBaseInterface<App
                 IRpcFunction.SubscribeCallback callback = subscribeCallbackPair.getLeft();
                 Object[] args = subscribeCallbackPair.getRight();
 
-                if (storageMethod.getHeadKey() != null && args.length == 0) {
+                if (storageMethod.getIterKey() != null && args.length == 0) {
                     return ApiBase.this.decorateStorageEntryLinked(storageMethod, callback, onCallDefinition);
                 }
 
@@ -737,7 +726,7 @@ public abstract class ApiBase<ApplyResult> implements Types.ApiBaseInterface<App
             }
 
             @Override
-            public String key(Object arg) {
+            public String key(Object arg) throws InvocationTargetException, IllegalAccessException {
                 return Utils.u8aToHex(Utils.compactStripLength(storageMethod.apply(arg)).getRight());
             }
 
@@ -878,7 +867,7 @@ public abstract class ApiBase<ApplyResult> implements Types.ApiBaseInterface<App
                                 });
                     }
                 },
-                Lists.newArrayList(new Object[]{new Object[]{storageMethod.getHeadKey()}}),
+                Lists.newArrayList(new Object[]{new Object[]{storageMethod.getIterKey()}}),
                 //Lists.newArrayList(storageMethod.getHeadKey()),
                 ApiBase.this instanceof ApiRx,
                 null

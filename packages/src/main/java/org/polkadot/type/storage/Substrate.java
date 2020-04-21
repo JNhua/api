@@ -3,14 +3,17 @@ package org.polkadot.type.storage;
 import com.google.common.collect.Lists;
 import org.polkadot.types.TypesUtils;
 import org.polkadot.types.codec.Vector;
-import org.polkadot.types.metadata.v0.Modules;
+import org.polkadot.types.metadata.latest.Storage;
 import org.polkadot.types.primitive.Bytes;
 import org.polkadot.types.primitive.StorageKey;
 import org.polkadot.types.primitive.Text;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class Substrate {
 
@@ -41,34 +44,58 @@ public class Substrate {
     }
 
     // Small helper function to factorize code on this page.
-    static StorageKey.StorageFunction createRuntimeFunction(String method, String key, SubstrateMetadata substrateMetadata) {
-        Map<String, Object> metaValues = new LinkedHashMap<>();
+    static StorageKey.StorageFunction<Function<Integer, StorageKey.StorageFunction<byte[]>>> createRuntimeFunction(String method, String key, SubstrateMetadata substrateMetadata) {
 
-        metaValues.put("documentation", new Vector<Text>(TypesUtils.getConstructorCodec(Text.class), Lists.newArrayList(substrateMetadata.getDocumentation())));
-        metaValues.put("modifier", new Modules.StorageFunctionModifier(1));
-        metaValues.put("type", new Modules.StorageFunctionType(substrateMetadata.getType(), 0));
-        //workthrough
-        metaValues.put("name", new Text("name"));
-        metaValues.put("default", new Bytes(null));
 
-        Modules.StorageFunctionMetadata storageFunctionMetadata = new Modules.StorageFunctionMetadata(metaValues) {
+
+        return new StorageKey.StorageFunction<Function<Integer, StorageKey.StorageFunction<byte[]>>>() {
+
+            @Override
+            public Function<Integer, StorageKey.StorageFunction<byte[]>> apply(Object... args) throws InvocationTargetException, IllegalAccessException {
+
+                return  metadataVersion -> {
+                    Map<String, Object> metaValues = new LinkedHashMap<>();
+
+                    metaValues.put("documentation", new Vector<Text>(TypesUtils.getConstructorCodec(Text.class), Lists.newArrayList(substrateMetadata.getDocumentation())));
+                    metaValues.put("modifier", new Storage.StorageEntryModifierLatest(1));
+                    metaValues.put("type", new Storage.StorageEntryTypeLatest(substrateMetadata.getType(), 0));
+                    metaValues.put("name", new Text("name"));
+                    metaValues.put("fallback", new Bytes(null));
+
+                    Storage.StorageEntryMetadataLatest storageMetadataLatest = new Storage.StorageEntryMetadataLatest(metaValues) {
+                        @Override
+                        public Object toJson() {
+                            return key;
+                        }
+                    };
+
+                    StorageKey.StorageFunction<byte[]> storageFunction = null;
+                    try {
+                        storageFunction = CreateFunction.createFunction(
+                                new CreateFunction.CreateItemFn(storageMetadataLatest, method, "Substrate", "substrate"),
+                                new CreateFunction.CreateItemOptions( key, metadataVersion, true)
+                        );
+                    } catch (NoSuchMethodException e) {
+                        e.printStackTrace();
+                    } catch (InvocationTargetException e) {
+                        e.printStackTrace();
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+
+                    allFunctions.put(method, storageFunction);
+
+                    return storageFunction;
+                };
+            }
+
             @Override
             public Object toJson() {
-                return key;
+                return null;
             }
         };
 
-        StorageKey.StorageFunction storageFunction = CreateFunction.createFunction(
-                "Substrate",
-                method,
-                storageFunctionMetadata,
-                true,
-                key
-        );
 
-        allFunctions.put(method, storageFunction);
-
-        return storageFunction;
     }
 
     public static Map<String, StorageKey.StorageFunction> allFunctions = new HashMap<>();

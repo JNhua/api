@@ -84,14 +84,14 @@ public class EventRecord extends Struct {
          * true when this is a ApplyExtrinsic
          */
         public boolean isApplyExtrinsic() {
-            return this.getType().equals("ApplyExtrinsic");
+            return "ApplyExtrinsic".equals(this.getType());
         }
 
         /**
          * true when this is a ApplyExtrinsic
          */
         public boolean isFinalization() {
-            return this.getType().equals("Finalization");
+            return "Finalization".equals(this.getType());
         }
     }
 

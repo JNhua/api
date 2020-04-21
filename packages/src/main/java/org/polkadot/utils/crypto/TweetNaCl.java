@@ -39,8 +39,9 @@ public class TweetNaCl {
         long[][] /*gf*/ p = new long[4][GF_LEN];
         int i;
 
-        if (!isSeeded)
+        if (!isSeeded) {
             randombytes(sk, 32);
+        }
         crypto_hash(d, sk, 32);
         d[0] &= 248;
         d[31] &= 127;
@@ -49,13 +50,16 @@ public class TweetNaCl {
         scalarbase(p,d, 0);
         pack(pk,p);
 
-        for (i=0;i < 32;++i)sk[32 + i] = pk[i];
+        for (i=0;i < 32;++i) {
+            sk[32 + i] = pk[i];
+        }
     }
 
     public static int crypto_box_keypair(byte[] y,byte[] x, boolean isSeeded)
     {
-        if (!isSeeded)
+        if (!isSeeded) {
             randombytes(x,32);
+        }
         return crypto_scalarmult_base(y,x);
     }
 
@@ -73,14 +77,16 @@ public class TweetNaCl {
     public static byte[] crypto_sign_open(byte[] signed, byte[] publicSigningKey) {
         byte[] message = new byte[signed.length];
         int res = TweetNaCl.crypto_sign_open(message, signed, signed.length, publicSigningKey);
-        if (res != 0)
+        if (res != 0) {
             throw new InvalidSignatureException();
+        }
         return Arrays.copyOfRange(message, 64, message.length);
     }
 
     public static byte[] crypto_box(byte[] message, byte[] nonce, byte[] theirPublicBoxingKey, byte[] ourSecretBoxingKey) {
-        if (nonce.length != BOX_NONCE_BYTES)
+        if (nonce.length != BOX_NONCE_BYTES) {
             throw new IllegalStateException("Illegal nonce length: "+nonce.length);
+        }
         byte[] cipherText = new byte[SECRETBOX_INTERNAL_OVERHEAD_BYTES + message.length];
         byte[] paddedMessage = new byte[SECRETBOX_INTERNAL_OVERHEAD_BYTES + message.length];
         System.arraycopy(message, 0, paddedMessage, SECRETBOX_INTERNAL_OVERHEAD_BYTES, message.length);
@@ -93,8 +99,9 @@ public class TweetNaCl {
         System.arraycopy(cipher, 0, paddedCipher, 16, cipher.length);
         byte[] rawText = new byte[paddedCipher.length];
         int res = TweetNaCl.crypto_box_open(rawText, paddedCipher, paddedCipher.length, nonce, theirPublicBoxingKey, secretBoxingKey);
-        if (res != 0)
+        if (res != 0) {
             throw new InvalidCipherTextException();
+        }
         return Arrays.copyOfRange(rawText, 32, rawText.length);
     }
 
@@ -110,8 +117,12 @@ public class TweetNaCl {
         byte[] c = new byte[SECRETBOX_OVERHEAD_BYTES + cipher.length];
         byte[] m = new byte[c.length];
         System.arraycopy(cipher, 0, c, SECRETBOX_OVERHEAD_BYTES, cipher.length);
-        if (c.length < 32) throw new IllegalStateException("Cipher too small!");
-        if (crypto_secretbox_open(m, c, c.length, nonce, key) != 0) throw new IllegalStateException("Invalid encryption!");
+        if (c.length < 32) {
+            throw new IllegalStateException("Cipher too small!");
+        }
+        if (crypto_secretbox_open(m, c, c.length, nonce, key) != 0) {
+            throw new IllegalStateException("Invalid encryption!");
+        }
         return Arrays.copyOfRange(m, SECRETBOX_INTERNAL_OVERHEAD_BYTES, m.length);
     }
 
@@ -148,7 +159,9 @@ public class TweetNaCl {
     private static int vn(byte[] x, int xOff, byte[] y,int n)
     {
         int i,d = 0;
-        for (i=0;i < n;++i)d |= 0xff & (x[xOff + i]^y[i]);
+        for (i=0;i < n;++i) {
+            d |= 0xff & (x[xOff + i]^y[i]);
+        }
         return (1 & ((d - 1) >> 8)) - 1;
     }
 
@@ -174,22 +187,32 @@ public class TweetNaCl {
             x[11+i] = ld32(k,16+4*i);
         }
 
-        for (i=0;i < 16;++i)y[i] = x[i];
+        for (i=0;i < 16;++i) {
+            y[i] = x[i];
+        }
 
         for (i=0;i < 20;++i){
             for (j=0;j < 4;++j){
-                for (m=0;m < 4;++m)t[m] = x[(5*j+4*m)%16];
+                for (m=0;m < 4;++m) {
+                    t[m] = x[(5*j+4*m)%16];
+                }
                 t[1] ^= L32(t[0]+t[3], 7);
                 t[2] ^= L32(t[1]+t[0], 9);
                 t[3] ^= L32(t[2]+t[1],13);
                 t[0] ^= L32(t[3]+t[2],18);
-                for (m=0;m < 4;++m)w[4*j+(j+m)%4] = t[m];
+                for (m=0;m < 4;++m) {
+                    w[4*j+(j+m)%4] = t[m];
+                }
             }
-            for (m=0;m < 16;++m)x[m] = w[m];
+            for (m=0;m < 16;++m) {
+                x[m] = w[m];
+            }
         }
 
         if (h != 0) {
-            for (i=0;i < 16;++i)x[i] += y[i];
+            for (i=0;i < 16;++i) {
+                x[i] += y[i];
+            }
             for (i=0;i < 4;++i){
                 x[5*i] -= ld32(c,4*i);
                 x[6+i] -= ld32(in,4*i);
@@ -198,8 +221,11 @@ public class TweetNaCl {
                 st32(out, 4*i,x[5*i]);
                 st32(out, 16+4*i,x[6+i]);
             }
-        } else
-            for (i=0;i < 16;++i)st32(out, 4 * i,x[i] + y[i]);
+        } else {
+            for (i=0;i < 16;++i) {
+                st32(out, 4 * i, x[i] + y[i]);
+            }
+        }
     }
 
     private static int crypto_core_salsa20(byte[] out,byte[] in,byte[] k,byte[] c)
@@ -220,14 +246,22 @@ public class TweetNaCl {
     {
         byte[] z = new byte[16],x = new byte[64];
         int u,i;
-        if (b == 0) return 0;
-        for (i=0;i < 16;++i)z[i] = 0;
-        for (i=0;i < 8;++i)z[i] = n[nOff + i];
+        if (b == 0) {
+            return 0;
+        }
+        for (i=0;i < 16;++i) {
+            z[i] = 0;
+        }
+        for (i=0;i < 8;++i) {
+            z[i] = n[nOff + i];
+        }
         int cOff = 0;
         int mOff = 0;
         while (b >= 64) {
             crypto_core_salsa20(x,z,k,sigma);
-            for (i=0;i < 64; ++i) c[cOff + i] = (byte)((m != null ? m[mOff + i]:0)^ x[i]);
+            for (i=0;i < 64; ++i) {
+                c[cOff + i] = (byte)((m != null ? m[mOff + i]:0)^ x[i]);
+            }
             u = 1;
             for (i = 8;i < 16;++i) {
                 u += 0xff & z[i];
@@ -236,11 +270,15 @@ public class TweetNaCl {
             }
             b -= 64;
             cOff += 64;
-            if (m != null) mOff += 64;
+            if (m != null) {
+                mOff += 64;
+            }
         }
         if (b != 0) {
             crypto_core_salsa20(x,z,k,sigma);
-            for (i=0;i < b; i++) c[cOff + i] = (byte)((m != null ? m[mOff + i]:0)^ x[i]);
+            for (i=0;i < b; i++) {
+                c[cOff + i] = (byte)((m != null ? m[mOff + i]:0)^ x[i]);
+            }
         }
         return 0;
     }
@@ -283,10 +321,12 @@ public class TweetNaCl {
         int s,i,j,u;
         int[] x = new int[17],r = new int[17],h = new int[17],c = new int[17],g = new int[17];
 
-        for (j=0;j < 17;++j)
+        for (j=0;j < 17;++j) {
             r[j]= h[j] = 0;
-        for (j=0;j < 16;++j)
+        }
+        for (j=0;j < 16;++j) {
             r[j] = 0xff & k[j];
+        }
         r[3]&=15;
         r[4]&=252;
         r[7]&=15;
@@ -296,20 +336,24 @@ public class TweetNaCl {
         r[15]&=15;
 
         while (n > 0) {
-            for (j=0;j < 17;++j)
+            for (j=0;j < 17;++j) {
                 c[j] = 0;
-            for (j = 0;(j < 16) && (j < n);++j)
+            }
+            for (j = 0;(j < 16) && (j < n);++j) {
                 c[j] = 0xff & m[mOff + j];
+            }
             c[j] = 1;
             mOff += j; n -= j;
             add1305(h,c);
             for (i=0;i < 17;++i){
                 x[i] = 0;
-                for (j=0;j < 17; ++j)
+                for (j=0;j < 17; ++j) {
                     x[i] += h[j] * ((j <= i)? r[i - j] : 320 * r[i + 17 - j]);
+                }
             }
-            for (i=0;i < 17;++i)
+            for (i=0;i < 17;++i) {
                 h[i] = x[i];
+            }
             u = 0;
             for (j=0;j < 16;++j){
                 u += h[j];
@@ -326,16 +370,23 @@ public class TweetNaCl {
             u += h[16]; h[16] = u;
         }
 
-        for (j=0;j < 17;++j)g[j] = h[j];
+        for (j=0;j < 17;++j) {
+            g[j] = h[j];
+        }
         add1305(h,minusp);
         s = -(h[16] >> 7);
-        for (j=0;j < 17;++j)h[j] ^= s & (g[j] ^ h[j]);
+        for (j=0;j < 17;++j) {
+            h[j] ^= s & (g[j] ^ h[j]);
+        }
 
-        for (j=0;j < 16;++j)
+        for (j=0;j < 16;++j) {
             c[j] = 0xff & k[j + 16];
+        }
         c[16] = 0;
         add1305(h,c);
-        for (j=0;j < 16;++j)out[outOff + j] = (byte)h[j];
+        for (j=0;j < 16;++j) {
+            out[outOff + j] = (byte)h[j];
+        }
         return 0;
     }
 
@@ -349,10 +400,14 @@ public class TweetNaCl {
     private static int crypto_secretbox(byte[] c,byte[] m,long d,byte[] n,byte[] k)
     {
         int i;
-        if (d < 32) return -1;
+        if (d < 32) {
+            return -1;
+        }
         crypto_stream_xor(c,m,d,n,k);
         crypto_onetimeauth(c, 16, c, 32, d - 32, c);
-        for (i=0;i < 16;++i)c[i] = 0;
+        for (i=0;i < 16;++i) {
+            c[i] = 0;
+        }
         return 0;
     }
 
@@ -360,18 +415,26 @@ public class TweetNaCl {
     {
         int i;
         byte[] x = new byte[32];
-        if (d < 32) return -1;
+        if (d < 32) {
+            return -1;
+        }
         crypto_stream(x,32,n,k);
-        if (crypto_onetimeauth_verify(c, 16,c, 32,d - 32,x) != 0) return -1;
+        if (crypto_onetimeauth_verify(c, 16,c, 32,d - 32,x) != 0) {
+            return -1;
+        }
         crypto_stream_xor(m, c, d, n, k);
-        for (i=0;i < 32;++i)m[i] = 0;
+        for (i=0;i < 32;++i) {
+            m[i] = 0;
+        }
         return 0;
     }
 
     private static void set25519(long[] /*gf*/ r, long[] /*gf*/ a)
     {
         int i;
-        for (i=0;i < 16;++i)r[i]=a[i];
+        for (i=0;i < 16;++i) {
+            r[i]=a[i];
+        }
     }
 
     private static void car25519(long[] /*gf*/ o, int oOff)
@@ -399,7 +462,9 @@ public class TweetNaCl {
     {
         int i,j,b;
         long[] /*gf*/ m = new long[GF_LEN],t = new long[GF_LEN];
-        for (i=0;i < 16;++i)t[i]=n[nOff+i];
+        for (i=0;i < 16;++i) {
+            t[i]=n[nOff+i];
+        }
         car25519(t, 0);
         car25519(t, 0);
         car25519(t, 0);
@@ -438,30 +503,45 @@ public class TweetNaCl {
     private static void unpack25519(long[] /*gf*/ o, byte[] n)
     {
         int i;
-        for (i=0;i < 16;++i)
+        for (i=0;i < 16;++i) {
             o[i] = (0xff & n[2*i])+((0xffL & n[2*i+1])<<8);
+        }
         o[15]&=0x7fff;
     }
 
     private static void A(long[] /*gf*/ o,long[] /*gf*/ a,long[] /*gf*/ b)
     {
         int i;
-        for (i=0;i < 16;++i)o[i]=a[i]+b[i];
+        for (i=0;i < 16;++i) {
+            o[i]=a[i]+b[i];
+        }
     }
 
     private static void Z(long[] /*gf*/ o,long[] /*gf*/ a,long[] /*gf*/ b)
     {
         int i;
-        for (i=0;i < 16;++i)o[i]=a[i]-b[i];
+        for (i=0;i < 16;++i) {
+            o[i]=a[i]-b[i];
+        }
     }
 
     private static void M(long[] /*gf*/ o, int oOff, long[] /*gf*/ a, int aOff, long[] /*gf*/ b, int bOff)
     {
         long[] t = new long[31];
-        for (int i=0;i < 31;++i)t[i]=0;
-        for (int i=0;i < 16; ++i) for(int j=0; j <16;++j)t[i+j]+=a[aOff + i]*b[bOff + j];
-        for (int i=0;i < 15;++i)t[i]+=38*t[i+16];
-        for (int i=0;i < 16;++i)o[oOff + i]=t[i];
+        for (int i=0;i < 31;++i) {
+            t[i]=0;
+        }
+        for (int i=0;i < 16; ++i) {
+            for(int j=0; j <16;++j) {
+                t[i + j] += a[aOff + i] * b[bOff + j];
+            }
+        }
+        for (int i=0;i < 15;++i) {
+            t[i]+=38*t[i+16];
+        }
+        for (int i=0;i < 16;++i) {
+            o[oOff + i]=t[i];
+        }
         car25519(o, oOff);
         car25519(o, oOff);
     }
@@ -475,24 +555,36 @@ public class TweetNaCl {
     {
         long[] /*gf*/ c = new long[GF_LEN];
         int a;
-        for (a=0;a < 16;++a)c[a]=i[iOff + a];
+        for (a=0;a < 16;++a) {
+            c[a]=i[iOff + a];
+        }
         for(a=253;a>=0;a--) {
             S(c,c);
-            if(a!=2&&a!=4) M(c, 0, c, 0, i, iOff);
+            if(a!=2&&a!=4) {
+                M(c, 0, c, 0, i, iOff);
+            }
         }
-        for (a=0;a < 16;++a)o[oOff + a]=c[a];
+        for (a=0;a < 16;++a) {
+            o[oOff + a]=c[a];
+        }
     }
 
     private static void pow2523(long[] /*gf*/ o,long[] /*gf*/ i)
     {
         long[] /*gf*/ c = new long[GF_LEN];
         int a;
-        for (a=0;a < 16;++a)c[a]=i[a];
+        for (a=0;a < 16;++a) {
+            c[a]=i[a];
+        }
         for(a=250;a>=0;a--) {
             S(c,c);
-            if(a!=1) M(c, 0, c, 0, i, 0);
+            if(a!=1) {
+                M(c, 0, c, 0, i, 0);
+            }
         }
-        for (a=0;a < 16;++a)o[a]=c[a];
+        for (a=0;a < 16;++a) {
+            o[a]=c[a];
+        }
     }
 
     private static int crypto_scalarmult(byte[] q,byte[] n,byte[] p)
@@ -503,8 +595,9 @@ public class TweetNaCl {
         int i;
         long[] /*gf*/ a = new long[GF_LEN],b = new long[GF_LEN],c = new long[GF_LEN],
                 d = new long[GF_LEN],e = new long[GF_LEN],f = new long[GF_LEN];
-        for (i=0;i < 31;++i)
+        for (i=0;i < 31;++i) {
             z[i] = n[i];
+        }
         z[31] = (byte)((n[31]&127)|64);
         z[0] &= 248;
         unpack25519(x,p);
@@ -611,7 +704,9 @@ public class TweetNaCl {
         crypto_hashblocks_hl(hh, hl, m, n);
         n %= 128;
 
-        for (i = 0; i < n; i++) x[i] = m[b-n+i];
+        for (i = 0; i < n; i++) {
+            x[i] = m[b-n+i];
+        }
         x[n] = (byte)128;
 
         n = 256-128*(n<112?1:0);
@@ -619,7 +714,9 @@ public class TweetNaCl {
         jsts64(x, n - 8, (b / 0x20000000), b << 3);
         crypto_hashblocks_hl(hh, hl, x, n);
 
-        for (i = 0; i < 8; i++) jsts64(out, 8 * i, hh[i], hl[i]);
+        for (i = 0; i < 8; i++) {
+            jsts64(out, 8 * i, hh[i], hl[i]);
+        }
 
         return 0;
     }
@@ -1069,8 +1166,9 @@ public class TweetNaCl {
     private static void cswap(long[][] /*gf*/ p/*[4]*/,long[][] /*gf*/ q/*[4]*/,byte b)
     {
         int i;
-        for(i=0; i < 4; i++)
-        sel25519(p[i],q[i],b & 0xff);
+        for(i=0; i < 4; i++) {
+            sel25519(p[i],q[i],b & 0xff);
+        }
     }
 
     private static void pack(byte[] r,long[][] /*gf*/ p/*[4]*/)
@@ -1134,7 +1232,9 @@ public class TweetNaCl {
         carry = x[j] >> 8;
         x[j] &= 255;
     }
-        for (j=0;j < 32;++j)x[j] -= carry * L[j];
+        for (j=0;j < 32;++j) {
+            x[j] -= carry * L[j];
+        }
         for (i=0;i < 32;++i){
         x[i+1] += x[i] >> 8;
         r[rOff + i] = (byte)(x[i] & 255);
@@ -1144,8 +1244,12 @@ public class TweetNaCl {
     private static void reduce(byte[] r)
     {
         long[] x = new long[64];
-        for (int i=0;i < 64; i++) x[i] = 0xff & r[i];
-        for (int i=0;i < 64;++i)r[i] = 0;
+        for (int i=0;i < 64; i++) {
+            x[i] = 0xff & r[i];
+        }
+        for (int i=0;i < 64;++i) {
+            r[i] = 0;
+        }
         modL(r, 0, x);
     }
 
@@ -1161,20 +1265,34 @@ public class TweetNaCl {
         d[31] |= 64;
 
 //        smlen[0] = n+64;
-        for (int i=0;i < n;++i)sm[64 + i] = m[i];
-        for (int i=0;i < 32;++i)sm[32 + i] = d[32 + i];
+        for (int i=0;i < n;++i) {
+            sm[64 + i] = m[i];
+        }
+        for (int i=0;i < 32;++i) {
+            sm[32 + i] = d[32 + i];
+        }
         crypto_hash(r, Arrays.copyOfRange(sm, 32, sm.length), n + 32);
         reduce(r);
         scalarbase(p, r, 0);
         pack(sm, p);
 
-        for (int i=0;i < 32;++i)sm[i+32] = sk[i+32];
+        for (int i=0;i < 32;++i) {
+            sm[i+32] = sk[i+32];
+        }
         crypto_hash(h, sm, n + 64);
         reduce(h);
 
-        for (int i=0;i < 64;++i) x[i] = 0;
-        for (int i=0;i < 32; ++i) x[i] = 0xff & r[i];
-        for (int i=0;i < 32; ++i) for(int j=0; j < 32; ++j) x[i+j] += (0xff & h[i]) * (0xff & d[j]);
+        for (int i=0;i < 64;++i) {
+            x[i] = 0;
+        }
+        for (int i=0;i < 32; ++i) {
+            x[i] = 0xff & r[i];
+        }
+        for (int i=0;i < 32; ++i) {
+            for(int j=0; j < 32; ++j) {
+                x[i + j] += (0xff & h[i]) * (0xff & d[j]);
+            }
+        }
         modL(sm, 32,x);
 
         return 0;
@@ -1205,13 +1323,19 @@ public class TweetNaCl {
 
         S(chk,r[0]);
         M(chk, 0, chk, 0, den, 0);
-        if (neq25519(chk, num) != 0) M(r[0], 0, r[0], 0, I, 0);
+        if (neq25519(chk, num) != 0) {
+            M(r[0], 0, r[0], 0, I, 0);
+        }
 
         S(chk, r[0]);
         M(chk, 0, chk, 0, den, 0);
-        if (neq25519(chk, num) != 0) return -1;
+        if (neq25519(chk, num) != 0) {
+            return -1;
+        }
 
-        if (par25519(r[0]) == ( (0xff & p[31]) >> 7)) Z(r[0],gf0,r[0]);
+        if (par25519(r[0]) == ( (0xff & p[31]) >> 7)) {
+            Z(r[0],gf0,r[0]);
+        }
 
         M(r[3], 0, r[0], 0, r[1], 0);
         return 0;
@@ -1224,12 +1348,20 @@ public class TweetNaCl {
         long[][] /*gf*/ p = new long[4][GF_LEN],q = new long[4][GF_LEN];
 
 //        mlen[0] = -1;
-        if (n < 64) return -1;
+        if (n < 64) {
+            return -1;
+        }
 
-        if (unpackneg(q,pk) != 0) return -1;
+        if (unpackneg(q,pk) != 0) {
+            return -1;
+        }
 
-        for (i=0;i < n;++i) m[i] = sm[i];
-        for (i=0;i < 32;++i) m[i+32] = pk[i];
+        for (i=0;i < n;++i) {
+            m[i] = sm[i];
+        }
+        for (i=0;i < 32;++i) {
+            m[i+32] = pk[i];
+        }
         crypto_hash(h, m, n);
         reduce(h);
         scalarmult(p, q, h, 0);
@@ -1240,11 +1372,15 @@ public class TweetNaCl {
 
         n -= 64;
         if (crypto_verify_32(sm, t) != 0) {
-            for (i=0;i < n;++i)m[i] = 0;
+            for (i=0;i < n;++i) {
+                m[i] = 0;
+            }
             return -1;
         }
 
-        for (i=0;i < n;++i)m[64 + i] = sm[i + 64];
+        for (i=0;i < n;++i) {
+            m[64 + i] = sm[i + 64];
+        }
 //        mlen[0] = n;
         return 0;
     }

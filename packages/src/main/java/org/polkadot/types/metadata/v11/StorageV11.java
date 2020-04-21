@@ -5,14 +5,10 @@ import org.polkadot.types.TypesUtils;
 import org.polkadot.types.codec.EnumType;
 import org.polkadot.types.codec.Struct;
 import org.polkadot.types.codec.Vector;
-import org.polkadot.types.metadata.v2.Storage.PlainType;
-import org.polkadot.types.metadata.v11.Items.MetadataStorageItem;
-import org.polkadot.types.primitive.Bool;
-import org.polkadot.types.primitive.Null;
-import org.polkadot.types.primitive.Text;
-import org.polkadot.types.primitive.Type;
+import org.polkadot.types.metadata.v3.Storage.StorageFunctionModifierV3;
+import org.polkadot.types.primitive.*;
 
-public interface Storage {
+public interface StorageV11 {
 
     class Blake2_128 extends Null {
     }
@@ -32,9 +28,12 @@ public interface Storage {
     class Twox64Concat extends Null {
     }
 
-    class StorageHasher extends EnumType {
+    class Identity extends Null {
+    }
 
-        public StorageHasher(Object value, int index) {
+    class StorageHasherV11 extends EnumType {
+
+        public StorageHasherV11(Object value, int index) {
             super(new Types.ConstructorDef()
                             .add("Blake2_128", Blake2_128.class)
                             .add("Blake2_256", Blake2_256.class)
@@ -42,10 +41,11 @@ public interface Storage {
                             .add("Twox128", Twox128.class)
                             .add("Twox256", Twox256.class)
                             .add("Twox64Concat", Twox64Concat.class)
+                            .add("Identitiy", Identity.class)
                     , value, index, null);
         }
 
-        public StorageHasher(Object value) {
+        public StorageHasherV11(Object value) {
             this(value, -1);
         }
 
@@ -64,16 +64,23 @@ public interface Storage {
     }
 
 
-    class MapType extends Struct {
-        public MapType(Object value) {
+    class MapTypeV11 extends Struct {
+        public MapTypeV11(Object value) {
             super(new Types.ConstructorDef()
-                            .add("hasher", StorageHasher.class)
+                            .add("hasher", StorageHasherV11.class)
                             .add("key", Type.class)
                             .add("value", Type.class)
                             .add("isLinked", Bool.class)
                     , value);
         }
 
+
+        /**
+         * The mapped key as {@link StorageHasherV11}
+         */
+        public StorageHasherV11 getHasher() {
+            return this.getField("hasher");
+        }
 
         /**
          * The mapped key as {@link org.polkadot.types.type}
@@ -92,20 +99,27 @@ public interface Storage {
         /**
          * Is this an enumerable linked map
          */
-        public Boolean isLinked() {
+        public Bool isLinked() {
             return this.getField("isLinked");
         }
     }
 
-    class DoubleMapType extends Struct {
-        public DoubleMapType(Object value) {
+    class DoubleMapTypeV11 extends Struct {
+        public DoubleMapTypeV11(Object value) {
             super(new Types.ConstructorDef()
-                            .add("hasher", StorageHasher.class)
+                            .add("hasher", StorageHasherV11.class)
                             .add("key1", Type.class)
                             .add("key2", Type.class)
                             .add("value", Type.class)
-                            .add("key2Hasher", StorageHasher.class)
+                            .add("key2Hasher", StorageHasherV11.class)
                     , value);
+        }
+
+        /**
+         * The mapped key as {@link StorageHasherV11}
+         */
+        public StorageHasherV11 getHasher() {
+            return this.getField("hasher");
         }
 
         /**
@@ -123,10 +137,10 @@ public interface Storage {
         }
 
         /**
-         * The mapped key as {@link Text}
+         * The mapped key as {@link StorageHasherV11}
          */
-        public StorageHasher getKeyHasher() {
-            return this.getField("keyHasher");
+        public StorageHasherV11 getKey2Hasher() {
+            return this.getField("key2Hasher");
         }
 
         /**
@@ -137,18 +151,24 @@ public interface Storage {
         }
     }
 
+    class PlainTypeV11 extends Type {
+
+        public PlainTypeV11(Object value) {
+            super(value);
+        }
+    }
 
     //EnumType<PlainType | MapType | DoubleMapType>
-    class MetadataStorageType extends EnumType {
-        public MetadataStorageType(Object value, int index) {
+    class StorageEntryTypeV11 extends EnumType {
+        public StorageEntryTypeV11(Object value, int index) {
             super(new Types.ConstructorDef()
-                            .add("PlainType", PlainType.class)
-                            .add("MapType", MapType.class)
-                            .add("DoubleMapType", DoubleMapType.class)
+                            .add("PlainType", PlainTypeV11.class)
+                            .add("MapType", MapTypeV11.class)
+                            .add("DoubleMapType", DoubleMapTypeV11.class)
                     , value, index, null);
         }
 
-        public MetadataStorageType(Object value) {
+        public StorageEntryTypeV11(Object value) {
             this(value, -1);
         }
 
@@ -156,8 +176,8 @@ public interface Storage {
         /**
          * The value as a mapped value
          */
-        public DoubleMapType asDoubleMap() {
-            return (DoubleMapType) this.value();
+        public DoubleMapTypeV11 asDoubleMap() {
+            return (DoubleMapTypeV11) this.value();
         }
 
 
@@ -178,15 +198,15 @@ public interface Storage {
         /**
          * The value as a mapped value
          */
-        public MapType asMap() {
-            return (MapType) this.value();
+        public MapTypeV11 asMap() {
+            return (MapTypeV11) this.value();
         }
 
         /**
          * The value as a {@link org.polkadot.types.type} value
          */
-        public PlainType asType() {
-            return (PlainType) this.value();
+        public PlainTypeV11 asPlain() {
+            return (PlainTypeV11) this.value();
         }
 
         /**
@@ -203,19 +223,76 @@ public interface Storage {
 
             return this.isMap()
                     ? this.asMap().getValue().toString()
-                    : this.asType().toString();
+                    : this.asPlain().toString();
         }
     }
 
+    class StorageEntryModifierV11 extends StorageFunctionModifierV3 {
+
+        public StorageEntryModifierV11(Object value) {
+            super(value);
+        }
+    }
+
+    /**
+     * The definition of an item
+     */
+    class StorageEntryMetadataV11 extends Struct {
+
+        public StorageEntryMetadataV11(Object value) {
+            super(new Types.ConstructorDef()
+                            .add("name", Text.class)
+                            .add("modifier", StorageEntryModifierV11.class)
+                            .add("type", StorageEntryTypeV11.class)
+                            .add("fallback", Bytes.class)
+                            .add("documentation", Vector.with(TypesUtils.getConstructorCodec(Text.class)))
+                    , value);
+        }
+
+        /**
+         * The {@link Text} documentation
+         */
+        public Vector<Text> getDocumentation() {
+            return this.getField("documentation");
+        }
+
+        /**
+         * The {@link Bytes} fallback default
+         */
+        public Bytes getFallback() {
+            return this.getField("fallback");
+        }
+
+        /**
+         * The MetadataArgument for arguments
+         */
+        public StorageEntryModifierV11 getModifier() {
+            return this.getField("modifier");
+        }
+
+        /**
+         * The item name
+         */
+        public Text getName() {
+            return this.getField("name");
+        }
+
+        /**
+         * The {@link StorageEntryTypeV11} MetadataStorageType
+         */
+        public StorageEntryTypeV11 getType() {
+            return this.getField("type");
+        }
+    }
 
     /**
      * The definition of a storage function
      */
-    class MetadataStorageV11 extends Struct {
-        public MetadataStorageV11(Object value) {
+    class StorageMetadataV11 extends Struct {
+        public StorageMetadataV11(Object value) {
             super(new Types.ConstructorDef()
                             .add("prefix", Text.class)
-                            .add("items", Vector.with(TypesUtils.getConstructorCodec(MetadataStorageItem.class)))
+                            .add("items", Vector.with(TypesUtils.getConstructorCodec(StorageEntryMetadataV11.class)))
                     , value);
         }
 
@@ -228,9 +305,9 @@ public interface Storage {
         }
 
         /**
-         * The {@link MetadataStorageItem} items
+         * The {@link StorageEntryMetadataV11} items
          */
-        public Vector<MetadataStorageItem> getItems() {
+        public Vector<StorageEntryMetadataV11> getItems() {
             return this.getField("items");
         }
     }

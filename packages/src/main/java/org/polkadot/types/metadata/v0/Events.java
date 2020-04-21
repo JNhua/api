@@ -10,8 +10,8 @@ import org.polkadot.types.primitive.Type;
 
 public interface Events {
 
-    class EventMetadata extends Struct {
-        public EventMetadata(Object value) {
+    class EventMetadataV0 extends Struct {
+        public EventMetadataV0(Object value) {
             super(new Types.ConstructorDef()
                             .add("name", Text.class)
                             .add("arguments", Vector.with(TypesUtils.getConstructorCodec(Type.class)))
@@ -43,18 +43,18 @@ public interface Events {
         }
     }
 
-    class OuterEventMetadataEvent extends Tuple {
-        public OuterEventMetadataEvent(Object value) {
+    class OuterEventEventMetadataV0 extends Tuple {
+        public OuterEventEventMetadataV0(Object value) {
             super(new Types.ConstructorDef()
                             .add("Text", Text.class)
-                            .add("Vec<EventMetadata>", Vector.with(TypesUtils.getConstructorCodec(EventMetadata.class)))
+                            .add("Vec<EventMetadata>", Vector.with(TypesUtils.getConstructorCodec(EventMetadataV0.class)))
                     , value);
         }
 
         /**
          * The EventMetadata
          */
-        public Vector<EventMetadata> getEvents() {
+        public Vector<EventMetadataV0> getEvents() {
             return this.getFiled(1);
         }
 
@@ -66,12 +66,11 @@ public interface Events {
         }
     }
 
-
-    class OuterEventMetadata extends Struct {
-        public OuterEventMetadata(Object value) {
+    class OuterEventMetadataV0 extends Struct {
+        public OuterEventMetadataV0(Object value) {
             super(new Types.ConstructorDef()
                             .add("name", Text.class)
-                            .add("events", Vector.with(TypesUtils.getConstructorCodec(OuterEventMetadataEvent.class)))
+                            .add("events", Vector.with(TypesUtils.getConstructorCodec(OuterEventEventMetadataV0.class)))
                     , value);
         }
     }

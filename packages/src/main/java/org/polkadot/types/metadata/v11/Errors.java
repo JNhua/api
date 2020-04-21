@@ -13,20 +13,20 @@ public interface Errors {
     /**
      * The definition of an error
      */
-    class MetadataError extends Struct {
+    class ErrorMetadataV11 extends Struct {
 
-        public MetadataError(Object value) {
+        public ErrorMetadataV11(Object value) {
             super(new Types.ConstructorDef()
                             .add("name", Text.class)
-                            .add("docs", Vector.with(TypesUtils.getConstructorCodec(Text.class)))
+                            .add("documentation", Vector.with(TypesUtils.getConstructorCodec(Text.class)))
                     , value);
         }
 
         /**
          * The {@link Text} documentation
          */
-        public Vector<Text> getDocs() {
-            return this.getField("docs");
+        public Vector<Text> getDocumentation() {
+            return this.getField("documentation");
         }
 
         /**

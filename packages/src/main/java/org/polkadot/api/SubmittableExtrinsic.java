@@ -12,7 +12,7 @@ import org.polkadot.types.codec.Struct;
 import org.polkadot.types.codec.TypeRegistry;
 import org.polkadot.types.codec.U8a;
 import org.polkadot.types.codec.Vector;
-import org.polkadot.types.metadata.v0.Modules;
+import org.polkadot.types.metadata.latest.Calls;
 import org.polkadot.types.primitive.Method;
 import org.polkadot.types.rpc.ExtrinsicStatus;
 import org.polkadot.types.rpc.SignedBlock;
@@ -118,7 +118,7 @@ public interface SubmittableExtrinsic<ApplyResult> extends Types.IExtrinsic {
         }
 
         @Override
-        public Modules.FunctionMetadata getMeta() {
+        public Calls.FunctionMetadataLatest getMeta() {
             return _extrinsic.getMeta();
         }
 

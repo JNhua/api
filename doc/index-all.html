@@ -636,7 +636,7 @@
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="org/polkadot/types/codec/Struct.html#builder--">builder()</a></span> - Static method in class org.polkadot.types.codec.<a href="org/polkadot/types/codec/Struct.html" title="class in org.polkadot.types.codec">Struct</a></dt>
 <dd>&nbsp;</dd>
-<dt><span class="memberNameLink"><a href="org/polkadot/types/type/Event.EventData.Builder.html#Builder-java.util.List-java.util.List-org.polkadot.types.metadata.v0.Events.EventMetadata-java.lang.String-java.lang.String-">Builder(List&lt;Types.ConstructorCodec&gt;, List&lt;CreateType.TypeDef&gt;, Events.EventMetadata, String, String)</a></span> - Constructor for class org.polkadot.types.type.<a href="org/polkadot/types/type/Event.EventData.Builder.html" title="class in org.polkadot.types.type">Event.EventData.Builder</a></dt>
+<dt><span class="memberNameLink"><a href="org/polkadot/types/type/Event.EventData.Builder.html#Builder-java.util.List-java.util.List-org.polkadot.types.metadata.v0.Events.EventMetadataV0-java.lang.String-java.lang.String-">Builder(List&lt;Types.ConstructorCodec&gt;, List&lt;CreateType.TypeDef&gt;, Events.EventMetadata, String, String)</a></span> - Constructor for class org.polkadot.types.type.<a href="org/polkadot/types/type/Event.EventData.Builder.html" title="class in org.polkadot.types.type">Event.EventData.Builder</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="org/polkadot/types/primitive/Bytes.html" title="class in org.polkadot.types.primitive"><span class="typeNameLink">Bytes</span></a> - Class in <a href="org/polkadot/types/primitive/package-summary.html">org.polkadot.types.primitive</a></dt>
 <dd>
@@ -814,7 +814,7 @@
 </dd>
 <dt><span class="memberNameLink"><a href="org/polkadot/types/codec/CreateType.html#createClass-java.lang.String-">createClass(String)</a></span> - Static method in class org.polkadot.types.codec.<a href="org/polkadot/types/codec/CreateType.html" title="class in org.polkadot.types.codec">CreateType</a></dt>
 <dd>&nbsp;</dd>
-<dt><span class="memberNameLink"><a href="org/polkadot/type/extrinsics/CreateUnchecked.html#createDescriptor-java.lang.String-java.lang.String-int-org.polkadot.types.metadata.v0.Modules.FunctionMetadata-">createDescriptor(String, String, int, Modules.FunctionMetadata)</a></span> - Static method in class org.polkadot.type.extrinsics.<a href="org/polkadot/type/extrinsics/CreateUnchecked.html" title="class in org.polkadot.type.extrinsics">CreateUnchecked</a></dt>
+<dt><span class="memberNameLink"><a href="org/polkadot/type/extrinsics/CreateUnchecked.html#createDescriptor-java.lang.String-java.lang.String-int-org.polkadot.types.metadata.v0.Modules.FunctionMetadataV0-">createDescriptor(String, String, int, Modules.FunctionMetadata)</a></span> - Static method in class org.polkadot.type.extrinsics.<a href="org/polkadot/type/extrinsics/CreateUnchecked.html" title="class in org.polkadot.type.extrinsics">CreateUnchecked</a></dt>
 <dd>
 <div class="block">From the metadata of a function in the module&rsquo;s storage, generate the function that will return the an UncheckExtrinsic.</div>
 </dd>
@@ -828,7 +828,7 @@
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="org/polkadot/type/storage/CreateFunction.html#CreateFunction--">CreateFunction()</a></span> - Constructor for class org.polkadot.type.storage.<a href="org/polkadot/type/storage/CreateFunction.html" title="class in org.polkadot.type.storage">CreateFunction</a></dt>
 <dd>&nbsp;</dd>
-<dt><span class="memberNameLink"><a href="org/polkadot/type/storage/CreateFunction.html#createFunction-java.lang.String-java.lang.String-org.polkadot.types.metadata.v0.Modules.StorageFunctionMetadata-boolean-java.lang.String-">createFunction(String, String, Modules.StorageFunctionMetadata, boolean, String)</a></span> - Static method in class org.polkadot.type.storage.<a href="org/polkadot/type/storage/CreateFunction.html" title="class in org.polkadot.type.storage">CreateFunction</a></dt>
+<dt><span class="memberNameLink"><a href="org/polkadot/type/storage/CreateFunction.html#createFunction-java.lang.String-java.lang.String-org.polkadot.types.metadata.v0.Modules.StorageFunctionMetadataV0-boolean-java.lang.String-">createFunction(String, String, Modules.StorageFunctionMetadata, boolean, String)</a></span> - Static method in class org.polkadot.type.storage.<a href="org/polkadot/type/storage/CreateFunction.html" title="class in org.polkadot.type.storage">CreateFunction</a></dt>
 <dd>
 <div class="block">From the schema of a function in the module&rsquo;s storage, generate the function that will return the correct storage key.</div>
 </dd>
@@ -900,7 +900,7 @@
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="org/polkadot/common/keyring/Types.KeyringInstance.html#decodeAddress-java.lang.Object-boolean-">decodeAddress(Object, boolean)</a></span> - Method in interface org.polkadot.common.keyring.<a href="org/polkadot/common/keyring/Types.KeyringInstance.html" title="interface in org.polkadot.common.keyring">Types.KeyringInstance</a></dt>
 <dd>&nbsp;</dd>
-<dt><span class="memberNameLink"><a href="org/polkadot/types/primitive/Method.DecodedMethod.html#DecodedMethod-java.lang.Object-org.polkadot.types.primitive.Method.MethodIndex-org.polkadot.types.Types.ConstructorDef-org.polkadot.types.metadata.v0.Modules.FunctionMetadata-">DecodedMethod(Object, Method.MethodIndex, Types.ConstructorDef, Modules.FunctionMetadata)</a></span> - Constructor for class org.polkadot.types.primitive.<a href="org/polkadot/types/primitive/Method.DecodedMethod.html" title="class in org.polkadot.types.primitive">Method.DecodedMethod</a></dt>
+<dt><span class="memberNameLink"><a href="org/polkadot/types/primitive/Method.DecodedMethod.html#DecodedMethod-java.lang.Object-org.polkadot.types.primitive.Method.MethodIndex-org.polkadot.types.Types.ConstructorDef-org.polkadot.types.metadata.v0.Modules.FunctionMetadataV0-">DecodedMethod(Object, Method.MethodIndex, Types.ConstructorDef, Modules.FunctionMetadata)</a></span> - Constructor for class org.polkadot.types.primitive.<a href="org/polkadot/types/primitive/Method.DecodedMethod.html" title="class in org.polkadot.types.primitive">Method.DecodedMethod</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="org/polkadot/types/type/Event.html#decodeEvent-byte:A-">decodeEvent(byte[])</a></span> - Static method in class org.polkadot.types.type.<a href="org/polkadot/types/type/Event.html" title="class in org.polkadot.types.type">Event</a></dt>
 <dd>&nbsp;</dd>
@@ -1278,7 +1278,7 @@
 <dd>
 <div class="block">This follows the same approach as in <a href="org/polkadot/types/primitive/Method.html" title="class in org.polkadot.types.primitive"><code>Method</code></a>, we have the <code>[sectionIndex, methodIndex]</code> pairing that indicates the actual event fired</div>
 </dd>
-<dt><span class="memberNameLink"><a href="org/polkadot/types/type/Event.EventData.html#EventData-java.util.List-byte:A-java.util.List-org.polkadot.types.metadata.v0.Events.EventMetadata-java.lang.String-java.lang.String-">EventData(List&lt;Types.ConstructorCodec&gt;, byte[], List&lt;CreateType.TypeDef&gt;, Events.EventMetadata, String, String)</a></span> - Constructor for class org.polkadot.types.type.<a href="org/polkadot/types/type/Event.EventData.html" title="class in org.polkadot.types.type">Event.EventData</a></dt>
+<dt><span class="memberNameLink"><a href="org/polkadot/types/type/Event.EventData.html#EventData-java.util.List-byte:A-java.util.List-org.polkadot.types.metadata.v0.Events.EventMetadataV0-java.lang.String-java.lang.String-">EventData(List&lt;Types.ConstructorCodec&gt;, byte[], List&lt;CreateType.TypeDef&gt;, Events.EventMetadata, String, String)</a></span> - Constructor for class org.polkadot.types.type.<a href="org/polkadot/types/type/Event.EventData.html" title="class in org.polkadot.types.type">Event.EventData</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="org/polkadot/common/EventEmitter.html" title="class in org.polkadot.common"><span class="typeNameLink">EventEmitter</span></a> - Class in <a href="org/polkadot/common/package-summary.html">org.polkadot.common</a></dt>
 <dd>&nbsp;</dd>
@@ -1422,7 +1422,7 @@
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="org/polkadot/api/ApiUtils.html#filterEvents-byte:A-org.polkadot.types.rpc.SignedBlock-java.util.List-">filterEvents(byte[], SignedBlock, List&lt;EventRecord&gt;)</a></span> - Static method in class org.polkadot.api.<a href="org/polkadot/api/ApiUtils.html" title="class in org.polkadot.api">ApiUtils</a></dt>
 <dd>&nbsp;</dd>
-<dt><span class="memberNameLink"><a href="org/polkadot/types/primitive/Method.html#filterOrigin-org.polkadot.types.metadata.v0.Modules.FunctionMetadata-">filterOrigin(Modules.FunctionMetadata)</a></span> - Static method in class org.polkadot.types.primitive.<a href="org/polkadot/types/primitive/Method.html" title="class in org.polkadot.types.primitive">Method</a></dt>
+<dt><span class="memberNameLink"><a href="org/polkadot/types/primitive/Method.html#filterOrigin-org.polkadot.types.metadata.v0.Modules.FunctionMetadataV0-">filterOrigin(Modules.FunctionMetadata)</a></span> - Static method in class org.polkadot.types.primitive.<a href="org/polkadot/types/primitive/Method.html" title="class in org.polkadot.types.primitive">Method</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="org/polkadot/types/type/EventRecord.Finalization.html#Finalization--">Finalization()</a></span> - Constructor for class org.polkadot.types.type.<a href="org/polkadot/types/type/EventRecord.Finalization.html" title="class in org.polkadot.types.type">EventRecord.Finalization</a></dt>
 <dd>&nbsp;</dd>
@@ -3747,7 +3747,7 @@
 <dd>
 <div class="block">Extrinsic function descriptor, as defined in <code>https://github.com/paritytech/wiki/blob/master/Extrinsic.md#the-extrinsic-format-for-node</code>.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="org/polkadot/types/primitive/Method.html#Method-java.lang.Object-org.polkadot.types.metadata.v0.Modules.FunctionMetadata-">Method(Object, Modules.FunctionMetadata)</a></span> - Constructor for class org.polkadot.types.primitive.<a href="org/polkadot/types/primitive/Method.html" title="class in org.polkadot.types.primitive">Method</a></dt>
+<dt><span class="memberNameLink"><a href="org/polkadot/types/primitive/Method.html#Method-java.lang.Object-org.polkadot.types.metadata.v0.Modules.FunctionMetadataV0-">Method(Object, Modules.FunctionMetadata)</a></span> - Constructor for class org.polkadot.types.primitive.<a href="org/polkadot/types/primitive/Method.html" title="class in org.polkadot.types.primitive">Method</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="org/polkadot/types/primitive/StorageKey.StorageFunction.html#method">method</a></span> - Variable in class org.polkadot.types.primitive.<a href="org/polkadot/types/primitive/StorageKey.StorageFunction.html" title="class in org.polkadot.types.primitive">StorageKey.StorageFunction</a></dt>
 <dd>&nbsp;</dd>
@@ -4239,7 +4239,7 @@
 <dd>
 <div class="block">A proposal in the system.</div>
 </dd>
-<dt><span class="memberNameLink"><a href="org/polkadot/types/type/Proposal.html#Proposal-java.lang.Object-org.polkadot.types.metadata.v0.Modules.FunctionMetadata-">Proposal(Object, Modules.FunctionMetadata)</a></span> - Constructor for class org.polkadot.types.type.<a href="org/polkadot/types/type/Proposal.html" title="class in org.polkadot.types.type">Proposal</a></dt>
+<dt><span class="memberNameLink"><a href="org/polkadot/types/type/Proposal.html#Proposal-java.lang.Object-org.polkadot.types.metadata.v0.Modules.FunctionMetadataV0-">Proposal(Object, Modules.FunctionMetadata)</a></span> - Constructor for class org.polkadot.types.type.<a href="org/polkadot/types/type/Proposal.html" title="class in org.polkadot.types.type">Proposal</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="org/polkadot/types/type/ProposalIndex.html" title="class in org.polkadot.types.type"><span class="typeNameLink">ProposalIndex</span></a> - Class in <a href="org/polkadot/types/type/package-summary.html">org.polkadot.types.type</a></dt>
 <dd>&nbsp;</dd>
@@ -4647,9 +4647,9 @@
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="org/polkadot/common/keyring/Types.KeyringPairJson.html#setMeta-org.polkadot.common.keyring.Types.KeyringPairMeta-">setMeta(Types.KeyringPairMeta)</a></span> - Method in class org.polkadot.common.keyring.<a href="org/polkadot/common/keyring/Types.KeyringPairJson.html" title="class in org.polkadot.common.keyring">Types.KeyringPairJson</a></dt>
 <dd>&nbsp;</dd>
-<dt><span class="memberNameLink"><a href="org/polkadot/types/primitive/Method.MethodFunction.html#setMeta-org.polkadot.types.metadata.v0.Modules.FunctionMetadata-">setMeta(Modules.FunctionMetadata)</a></span> - Method in class org.polkadot.types.primitive.<a href="org/polkadot/types/primitive/Method.MethodFunction.html" title="class in org.polkadot.types.primitive">Method.MethodFunction</a></dt>
+<dt><span class="memberNameLink"><a href="org/polkadot/types/primitive/Method.MethodFunction.html#setMeta-org.polkadot.types.metadata.v0.Modules.FunctionMetadataV0-">setMeta(Modules.FunctionMetadata)</a></span> - Method in class org.polkadot.types.primitive.<a href="org/polkadot/types/primitive/Method.MethodFunction.html" title="class in org.polkadot.types.primitive">Method.MethodFunction</a></dt>
 <dd>&nbsp;</dd>
-<dt><span class="memberNameLink"><a href="org/polkadot/types/primitive/StorageKey.StorageFunction.html#setMeta-org.polkadot.types.metadata.v0.Modules.StorageFunctionMetadata-">setMeta(Modules.StorageFunctionMetadata)</a></span> - Method in class org.polkadot.types.primitive.<a href="org/polkadot/types/primitive/StorageKey.StorageFunction.html" title="class in org.polkadot.types.primitive">StorageKey.StorageFunction</a></dt>
+<dt><span class="memberNameLink"><a href="org/polkadot/types/primitive/StorageKey.StorageFunction.html#setMeta-org.polkadot.types.metadata.v0.Modules.StorageFunctionMetadataV0-">setMeta(Modules.StorageFunctionMetadata)</a></span> - Method in class org.polkadot.types.primitive.<a href="org/polkadot/types/primitive/StorageKey.StorageFunction.html" title="class in org.polkadot.types.primitive">StorageKey.StorageFunction</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="org/polkadot/rpc/json/types/JsonRpcMethod.html#setMethod-java.lang.String-">setMethod(String)</a></span> - Method in class org.polkadot.rpc.json.types.<a href="org/polkadot/rpc/json/types/JsonRpcMethod.html" title="class in org.polkadot.rpc.json.types">JsonRpcMethod</a></dt>
 <dd>&nbsp;</dd>

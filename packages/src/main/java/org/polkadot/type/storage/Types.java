@@ -7,7 +7,6 @@ import org.polkadot.types.primitive.StorageKey;
 public interface Types {
 
     class ModuleStorage extends ISection<StorageKey.StorageFunction> {
-
     }
 
     interface Storage extends IModule<ModuleStorage> {

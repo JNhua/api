@@ -5,17 +5,16 @@ import org.polkadot.types.TypesUtils;
 import org.polkadot.types.codec.EnumType;
 import org.polkadot.types.codec.Struct;
 import org.polkadot.types.codec.Vector;
-import org.polkadot.types.metadata.v1.Storage.MetadataStorageModifier;
-import org.polkadot.types.metadata.v2.Storage.MapType;
-import org.polkadot.types.metadata.v2.Storage.PlainType;
 import org.polkadot.types.primitive.Bytes;
 import org.polkadot.types.primitive.Text;
+import org.polkadot.types.metadata.v0.Storage.StorageFunctionModifierV0;
+import org.polkadot.types.primitive.Type;
+import org.polkadot.types.metadata.v2.Storage.MapTypeV2;
 
 public interface Storage {
 
-
-    class DoubleMapType extends Struct {
-        public DoubleMapType(Object value) {
+    class DoubleMapTypeV3 extends Struct {
+        public DoubleMapTypeV3(Object value) {
             super(new Types.ConstructorDef()
                             .add("key1", Text.class)
                             .add("key2", Text.class)
@@ -53,18 +52,30 @@ public interface Storage {
         }
     }
 
+    class PlainTypeV3 extends Type{
+        public PlainTypeV3(Object value) {
+            super(value);
+        }
+    }
+
+    class MapTypeV3 extends MapTypeV2{
+
+        public MapTypeV3(Object value) {
+            super(value);
+        }
+    }
 
     //EnumType<PlainType | MapType | DoubleMapType>
-    class MetadataStorageType extends EnumType {
-        public MetadataStorageType(Object value, int index) {
+    class StorageFunctionTypeV3 extends EnumType {
+        public StorageFunctionTypeV3(Object value, int index) {
             super(new Types.ConstructorDef()
-                            .add("PlainType", PlainType.class)
-                            .add("MapType", MapType.class)
-                            .add("DoubleMapType", DoubleMapType.class)
+                            .add("PlainType", PlainTypeV3.class)
+                            .add("MapType", MapTypeV3.class)
+                            .add("DoubleMapType", DoubleMapTypeV3.class)
                     , value, index, null);
         }
 
-        public MetadataStorageType(Object value) {
+        public StorageFunctionTypeV3(Object value) {
             this(value, -1);
         }
 
@@ -72,8 +83,8 @@ public interface Storage {
         /**
          * The value as a mapped value
          */
-        public DoubleMapType asDoubleMap() {
-            return (DoubleMapType) this.value();
+        public DoubleMapTypeV3 asDoubleMap() {
+            return (DoubleMapTypeV3) this.value();
         }
 
 
@@ -94,15 +105,15 @@ public interface Storage {
         /**
          * The value as a mapped value
          */
-        public MapType asMap() {
-            return (MapType) this.value();
+        public MapTypeV3 asMap() {
+            return (MapTypeV3) this.value();
         }
 
         /**
          * The value as a {@link org.polkadot.types.type} value
          */
-        public PlainType asType() {
-            return (PlainType) this.value();
+        public PlainTypeV3 asType() {
+            return (PlainTypeV3) this.value();
         }
 
         /**
@@ -123,28 +134,32 @@ public interface Storage {
         }
     }
 
+    class StorageFunctionModifierV3 extends StorageFunctionModifierV0 {
 
-
+        public StorageFunctionModifierV3(Object value) {
+            super(value);
+        }
+    }
 
     /**
      * The definition of a storage function
      */
-    class MetadataStorageV3 extends Struct {
-        public MetadataStorageV3(Object value) {
+    class StorageFunctionMetadataV3 extends Struct {
+        public StorageFunctionMetadataV3(Object value) {
             super(new Types.ConstructorDef()
                             .add("name", Text.class)
-                            .add("modifier", MetadataStorageModifier.class)
-                            .add("type", MetadataStorageType.class)
+                            .add("modifier", StorageFunctionModifierV3.class)
+                            .add("type", StorageFunctionTypeV3.class)
                             .add("fallback", Bytes.class)
-                            .add("docs", Vector.with(TypesUtils.getConstructorCodec(Text.class)))
+                            .add("documentation", Vector.with(TypesUtils.getConstructorCodec(Text.class)))
                     , value);
         }
 
         /**
          * The {@link org.polkadot.types.primitive.Text} documentation
          */
-        public Vector<Text> getDocs() {
-            return this.getField("docs");
+        public Vector<Text> getDocumentation() {
+            return this.getField("documentation");
         }
 
         /**
@@ -157,7 +172,7 @@ public interface Storage {
         /**
          * The MetadataArgument for arguments
          */
-        public MetadataStorageModifier getModifier() {
+        public StorageFunctionModifierV0 getModifier() {
             return this.getField("modifier");
         }
 
@@ -171,10 +186,9 @@ public interface Storage {
         /**
          * The MetadataStorageType
          */
-        public MetadataStorageType getType() {
+        public StorageFunctionTypeV3 getType() {
             return this.getField("type");
         }
     }
-
 
 }

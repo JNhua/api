@@ -2,13 +2,10 @@ package org.polkadot.types.metadata.v2;
 
 import com.google.common.collect.Lists;
 import org.polkadot.types.TypesUtils;
-import org.polkadot.types.codec.Option;
 import org.polkadot.types.codec.Struct;
 import org.polkadot.types.codec.Vector;
 import org.polkadot.types.metadata.MetadataUtils;
 import org.polkadot.types.metadata.Types;
-import org.polkadot.types.metadata.v1.Calls;
-import org.polkadot.types.metadata.v1.Events;
 import org.polkadot.types.primitive.Text;
 
 import java.util.ArrayList;
@@ -17,69 +14,16 @@ import java.util.stream.Collectors;
 
 public class MetadataV2  extends Struct implements Types.MetadataInterface {
 
-
-    /**
-     * The definition of a module in the system
-     */
-    public static class MetadataModule extends Struct {
-        public MetadataModule(Object value) {
-            super(new org.polkadot.types.Types.ConstructorDef()
-                            .add("name", Text.class)
-                            .add("prefix", Text.class)
-                            .add("storage", Option.with(Vector.with(TypesUtils.getConstructorCodec(Storage.MetadataStorageV2.class))))
-                            .add("calls", Option.with(Vector.with(TypesUtils.getConstructorCodec(Calls.MetadataCall.class))))
-                            .add("events", Option.with(Vector.with(TypesUtils.getConstructorCodec(Events.MetadataEvent.class))))
-                    , value);
-        }
-
-
-        /**
-         * the module calls
-         */
-        public Option<Vector<Calls.MetadataCall>> getCalls() {
-            return this.getField("calls");
-        }
-
-        /**
-         * the module events
-         */
-        public Option<Vector<Events.MetadataEvent>> getEvents() {
-            return this.getField("events");
-        }
-
-        /**
-         * the module name
-         */
-        public Text getName() {
-            return this.getField("name");
-        }
-
-        /**
-         * the module prefix
-         */
-        public Text getPrefix() {
-            return this.getField("prefix");
-        }
-
-        /**
-         * the associated module storage
-         */
-        public Option<Vector<Storage.MetadataStorageV2>> getStorage() {
-            return this.getField("storage");
-        }
-    }
-
-
     public MetadataV2(Object value) {
         super(new org.polkadot.types.Types.ConstructorDef()
-                        .add("modules", Vector.with(TypesUtils.getConstructorCodec(MetadataModule.class)))
+                        .add("modules", Vector.with(TypesUtils.getConstructorCodec(Modules.ModuleMetadataV2.class)))
                 , value);
     }
 
     /**
      * The associated modules for this structure
      */
-    Vector<MetadataModule> getModules() {
+    Vector<Modules.ModuleMetadataV2> getModules() {
         return this.getField("modules");
     }
 
@@ -108,8 +52,8 @@ public class MetadataV2  extends Struct implements Types.MetadataInterface {
                             ? Lists.newArrayList()
                             : mod.getEvents().unwrap().stream().map(
                             (event) -> {
-                                return event.getArgs().stream().map(
-                                        (arg) -> arg.toString()
+                                return event.getArguments().stream().map(
+                                        Text::toString
                                 ).collect(Collectors.toList());
                             }
                     ).collect(Collectors.toList());

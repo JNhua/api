@@ -129,7 +129,7 @@ public class Keyring implements Types.KeyringInstance {
         String version = pair.getEncoding().getVersion();
         String[] content = pair.getEncoding().getContent();
 
-        String type = version.equals("0") || !content.getClass().isArray()
+        String type = "0".equals(version) || !content.getClass().isArray()
                 ? this.type
                 : content[1];
 

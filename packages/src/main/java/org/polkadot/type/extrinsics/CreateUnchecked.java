@@ -2,7 +2,7 @@ package org.polkadot.type.extrinsics;
 
 import com.google.common.collect.Maps;
 import com.google.common.primitives.UnsignedBytes;
-import org.polkadot.types.metadata.v0.Modules;
+import org.polkadot.types.metadata.latest.Calls;
 import org.polkadot.types.primitive.Method;
 
 import java.util.LinkedHashMap;
@@ -14,13 +14,13 @@ public class CreateUnchecked {
      * From the metadata of a function in the module's storage, generate the function
      * that will return the an UncheckExtrinsic.
      *
-     * @param index - Index of the module section in the modules array.
+     * @param sectionIndex - Index of the module section in the modules array.
      */
-    public static Method.MethodFunction createDescriptor(String section, String method, int index, Modules.FunctionMetadata meta) {
+    public static Method.MethodFunction createDescriptor(String section, int sectionIndex, String method, int methodIndex, Calls.FunctionMetadataLatest meta) {
 
-        byte[] callIndex = new byte[]{UnsignedBytes.checkedCast(index), UnsignedBytes.checkedCast(meta.getId().toNumber())};
+        byte[] callIndex = new byte[]{UnsignedBytes.checkedCast(sectionIndex), UnsignedBytes.checkedCast(methodIndex)};
 
-        List<Modules.FunctionArgumentMetadata> expectedArgs = Method.filterOrigin(meta);
+        List<Calls.FunctionArgumentMetadataLatest> expectedArgs = Method.filterOrigin(meta);
 
         Method.MethodFunction extrinsicFn = new Method.MethodFunction() {
             @Override

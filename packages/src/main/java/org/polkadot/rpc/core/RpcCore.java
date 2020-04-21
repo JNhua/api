@@ -20,7 +20,7 @@ import org.polkadot.types.Types;
 import org.polkadot.types.codec.CreateType;
 import org.polkadot.types.codec.Option;
 import org.polkadot.types.codec.Vector;
-import org.polkadot.types.metadata.v0.Modules;
+import org.polkadot.types.metadata.latest.Storage;
 import org.polkadot.types.primitive.StorageKey;
 import org.polkadot.types.rpc.StorageChangeSet;
 import org.polkadot.types.type.KeyValue;
@@ -175,7 +175,7 @@ public class RpcCore implements IRpcModule {
 
         Codec base = CreateType.createType(jsonRpcMethod.getType(), result);
 
-        if (jsonRpcMethod.getType().equals("StorageData")) {
+        if ("StorageData".equals(jsonRpcMethod.getType())) {
             // single return value (via state.getStorage), decode the value based on the
             // outputType that we have specified. Fallback to Data on nothing
             StorageKey key = ((StorageKey) params.get(0));
@@ -186,11 +186,11 @@ public class RpcCore implements IRpcModule {
 
             Types.ConstructorCodec clazz = CreateType.createClass(type);
             //      const meta = key.meta || { default: undefined, modifier: { isOptional: true } };
-            Modules.StorageFunctionMetadata meta = key.getMeta();
+            Storage.StorageEntryMetadataLatest meta = key.getMeta();
 
             if (key.getMeta() != null
                     && key.getMeta().getType().isMap()
-                    && key.getMeta().getType().asMap().isLinked()) {
+                    && key.getMeta().getType().asMap().isLinked().rawBool()) {
 
                 // linked map
                 return clazz.newInstance(base);
@@ -202,7 +202,7 @@ public class RpcCore implements IRpcModule {
                 }
             }
 
-        } else if (jsonRpcMethod.getType().equals("StorageChangeSet")) {
+        } else if ("StorageChangeSet".equals(jsonRpcMethod.getType())) {
             // multiple return values (via state.storage subscription), decode the values
             // one at a time, all based on the query types. Three values can be returned -
             //   - Base - There is a valid value, non-empty
@@ -226,7 +226,7 @@ public class RpcCore implements IRpcModule {
                         .filter(item -> item.getKey().toHex().equals(hexKey))
                         .findFirst().orElse(null);
 
-                Modules.StorageFunctionMetadata meta = key.getMeta();
+                Storage.StorageEntryMetadataLatest meta = key.getMeta();
                 //const meta = meta || { default: undefined, modifier: { isOptional: true } };
 
                 if (option == null) {
@@ -236,7 +236,7 @@ public class RpcCore implements IRpcModule {
                 } else {
                     if (key.getMeta() != null
                             && key.getMeta().getType().isMap()
-                            && key.getMeta().getType().asMap().isLinked()) {
+                            && key.getMeta().getType().asMap().isLinked().rawBool()) {
 
                         // linked map
                         ret.add(clazz.newInstance(option.getValue().unwrapOr(null)));
@@ -249,7 +249,7 @@ public class RpcCore implements IRpcModule {
                         } else {
                             // for `null` we fallback to the default value, or create an empty type,
                             // otherwise we return the actual value as retrieved
-                            ret.add(clazz.newInstance(option.getValue().unwrapOr(meta.getDefault())));
+                            ret.add(clazz.newInstance(option.getValue().unwrapOr(meta.getFallback())));
                         }
                     }
 

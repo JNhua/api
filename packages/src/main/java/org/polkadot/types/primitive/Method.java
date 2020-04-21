@@ -7,7 +7,7 @@ import org.polkadot.types.Codec;
 import org.polkadot.types.Types;
 import org.polkadot.types.codec.Vector;
 import org.polkadot.types.codec.*;
-import org.polkadot.types.metadata.v0.Modules;
+import org.polkadot.types.metadata.latest.Calls;
 import org.polkadot.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,20 +73,20 @@ public class Method extends Struct implements Types.IMethod {
     public static class DecodedMethod extends DecodeMethodInput {
 
 
-        public DecodedMethod(Object args, MethodIndex callIndex, Types.ConstructorDef argsDef, Modules.FunctionMetadata meta) {
+        public DecodedMethod(Object args, MethodIndex callIndex, Types.ConstructorDef argsDef, Calls.FunctionMetadataLatest meta) {
             super(args, callIndex);
             this.argsDef = argsDef;
             this.meta = meta;
         }
 
         public Types.ConstructorDef argsDef;
-        public Modules.FunctionMetadata meta;
+        public Calls.FunctionMetadataLatest meta;
 
         public Types.ConstructorDef getArgsDef() {
             return argsDef;
         }
 
-        public Modules.FunctionMetadata getMeta() {
+        public Calls.FunctionMetadataLatest getMeta() {
             return meta;
         }
     }
@@ -104,7 +104,7 @@ public class Method extends Struct implements Types.IMethod {
         public abstract Method apply(Object... args);
 
         byte[] callIndex;
-        Modules.FunctionMetadata meta;
+        Calls.FunctionMetadataLatest meta;
         String method;
         String section;
 
@@ -118,11 +118,11 @@ public class Method extends Struct implements Types.IMethod {
             this.callIndex = callIndex;
         }
 
-        public Modules.FunctionMetadata getMeta() {
+        public Calls.FunctionMetadataLatest getMeta() {
             return meta;
         }
 
-        public void setMeta(Modules.FunctionMetadata meta) {
+        public void setMeta(Calls.FunctionMetadataLatest meta) {
             this.meta = meta;
         }
 
@@ -159,9 +159,9 @@ public class Method extends Struct implements Types.IMethod {
 
     }
 
-    protected Modules.FunctionMetadata meta;
+    protected Calls.FunctionMetadataLatest meta;
 
-    public Method(Object value, Modules.FunctionMetadata meta) {
+    public Method(Object value, Calls.FunctionMetadataLatest meta) {
         super(new Types.ConstructorDef()
                         .add("callIndex", MethodIndex.class)
                         .add("args", Struct.with(decodeMethod(value, meta).argsDef))
@@ -176,11 +176,11 @@ public class Method extends Struct implements Types.IMethod {
      *              - hex
      *              - Uint8Array
      *              - @see DecodeMethodInput
-     * @param _meta - Metadata to use, so that `injectMethods` lookup is not
+     * @param meta - Metadata to use, so that `injectMethods` lookup is not
      *              necessary.
      */
     //private static decodeMethod (value: DecodedMethod | Uint8Array | string, _meta?: FunctionMetadata): DecodedMethod {
-    private static DecodedMethod decodeMethod(Object value, Modules.FunctionMetadata meta) {
+    private static DecodedMethod decodeMethod(Object value, Calls.FunctionMetadataLatest meta) {
         if (Utils.isHex(value)) {
             return decodeMethod(Utils.hexToU8a((String) value), meta);
         } else if (Utils.isU8a(value)) {
@@ -191,7 +191,7 @@ public class Method extends Struct implements Types.IMethod {
             //U8a callIndex = u8a.subarray(0, 2);
 
             // Find metadata with callIndex
-            Modules.FunctionMetadata fMeta = meta;
+            Calls.FunctionMetadataLatest fMeta = meta;
             if (fMeta == null) {
                 fMeta = findFunction(callIndex).meta;
             }
@@ -227,7 +227,7 @@ public class Method extends Struct implements Types.IMethod {
             }
 
             // Find metadata with callIndex
-            Modules.FunctionMetadata fMeta = meta;
+            Calls.FunctionMetadataLatest fMeta = meta;
             if (fMeta == null) {
                 fMeta = findFunction(lookupIndex).meta;
             }
@@ -246,7 +246,7 @@ public class Method extends Struct implements Types.IMethod {
                 new U8a(new byte[0]),
                 new MethodIndex(new byte[]{UnsignedBytes.MAX_VALUE, UnsignedBytes.MAX_VALUE}),
                 new Types.ConstructorDef(),
-                new Modules.FunctionMetadata(null)
+                new Calls.FunctionMetadataLatest(null)
         );
     }
 
@@ -269,7 +269,7 @@ public class Method extends Struct implements Types.IMethod {
      *
      * @param meta - The function metadata used to get the definition.
      */
-    private static Types.ConstructorDef getArgsDef(Modules.FunctionMetadata meta) {
+    private static Types.ConstructorDef getArgsDef(Calls.FunctionMetadataLatest meta) {
         Types.ConstructorDef constructorDef = new Types.ConstructorDef();
         filterOrigin(meta).stream().forEach((argumentMetadata) -> {
             Types.ConstructorCodec type = CreateType.getTypeClass(CreateType.getTypeDef(argumentMetadata.getType().toString(), null));
@@ -279,14 +279,13 @@ public class Method extends Struct implements Types.IMethod {
     }
 
     // If the extrinsic function has an argument of type `Origin`, we ignore it
-    public static List<Modules.FunctionArgumentMetadata> filterOrigin(Modules.FunctionMetadata meta) {
+    public static List<Calls.FunctionArgumentMetadataLatest> filterOrigin(Calls.FunctionMetadataLatest meta) {
         // FIXME should be `arg.type !== Origin`, but doesn't work...
         if (meta != null) {
-            Vector<Modules.FunctionArgumentMetadata> arguments = meta.getArguments();
-            List<Modules.FunctionArgumentMetadata> ret = arguments.stream()
-                    .filter((Modules.FunctionArgumentMetadata argument) -> !argument.getType().toString().equals("Origin"))
+            Vector<Calls.FunctionArgumentMetadataLatest> arguments = meta.getArgs();
+            return arguments.stream()
+                    .filter((Calls.FunctionArgumentMetadataLatest argument) -> !"Origin".equals(argument.getType().toString()))
                     .collect(Collectors.toList());
-            return ret;
         }
         return Collections.emptyList();
     }
@@ -340,17 +339,17 @@ public class Method extends Struct implements Types.IMethod {
      */
     @Override
     public boolean hasOrigin() {
-        Vector<Modules.FunctionArgumentMetadata> arguments = this.meta.getField("arguments");
-        Modules.FunctionArgumentMetadata firstArg = arguments.size() > 0 ? arguments.get(0) : null;
+        Vector<Calls.FunctionArgumentMetadataLatest> arguments = this.meta.getField("arguments");
+        Calls.FunctionArgumentMetadataLatest firstArg = arguments.size() > 0 ? arguments.get(0) : null;
 
-        return firstArg != null && firstArg.getType().toString().equals("Origin");
+        return firstArg != null && "Origin".equals(firstArg.getType().toString());
     }
 
     /**
      * The FunctionMetadata
      */
     @Override
-    public Modules.FunctionMetadata getMeta() {
+    public Calls.FunctionMetadataLatest getMeta() {
         return this.meta;
     }
 

@@ -45,8 +45,7 @@ public class Metadata extends MetadataVersioned {
                         MAGIC_NUMBER.toU8a(), // manually add the magic number
                         new byte[]{0}, // add the version for the original
                         value // the actual data as retrieved
-                ))
-        );
+                )));
     }
 
 //    v3

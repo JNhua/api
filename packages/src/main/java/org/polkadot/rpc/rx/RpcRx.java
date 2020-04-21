@@ -98,8 +98,8 @@ public class RpcRx extends Types.RpcRxInterface {
         Types.RpcRxInterfaceSection ret = new Types.RpcRxInterfaceSection();
 
         for (String functionName : section.functionNames()) {
-            if (functionName.equals("subscribe")
-                    || functionName.equals("unsubscribe")) {
+            if ("subscribe".equals(functionName)
+                    || "unsubscribe".equals(functionName)) {
                 continue;
             }
 

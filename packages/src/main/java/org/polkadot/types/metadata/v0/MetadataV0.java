@@ -10,6 +10,7 @@ import org.polkadot.types.codec.Struct;
 import org.polkadot.types.codec.Vector;
 import org.polkadot.types.metadata.MetadataUtils;
 import org.polkadot.types.metadata.Types.MetadataInterface;
+import org.polkadot.types.primitive.Text;
 import org.polkadot.types.primitive.Type;
 import org.polkadot.utils.Utils;
 
@@ -28,21 +29,13 @@ import java.util.stream.Collectors;
 public class MetadataV0 extends Struct implements MetadataInterface {
 
     public MetadataV0(Object value) {
-        /*
-    super({
-      outerEvent: OuterEventMetadata,
-      modules: Vector.with(RuntimeModuleMetadata),
-      outerDispatch: OuterDispatchMetadata
-    }, MetadataV0.decodeMetadata(value));
-        * */
         super(new Types.ConstructorDef()
-                        .add("outerEvent", Events.OuterEventMetadata.class)
+                        .add("outerEvent", Events.OuterEventMetadataV0.class)
                         .add("modules", Vector.with(TypesUtils.getConstructorCodec(Modules.RuntimeModuleMetadata.class)))
                         .add("outerDispatch", Calls.OuterDispatchMetadata.class)
                 , decodeMetadata(value));
     }
 
-    //  static decodeMetadata (value: string | Uint8Array | object): object | Uint8Array {
     static Object decodeMetadata(Object value) {
         if (Utils.isHex(value)) {
             // We receive this as an hex in the JSON output from the Node.
@@ -57,8 +50,8 @@ public class MetadataV0 extends Struct implements MetadataInterface {
             //const [offset, length] = Compact.decodeU8a(value);
             byte[] bytes = (byte[]) value;
             Pair<Integer, BigInteger> pair = Utils.compactFromU8a(bytes);
-            return bytes.length == (pair.getKey().intValue() + pair.getValue().intValue())
-                    ? ArrayUtils.subarray(bytes, pair.getKey().intValue(), bytes.length)
+            return bytes.length == (pair.getKey() + pair.getValue().intValue())
+                    ? ArrayUtils.subarray(bytes, pair.getKey(), bytes.length)
                     : bytes;
         }
 
@@ -76,8 +69,8 @@ public class MetadataV0 extends Struct implements MetadataInterface {
     /**
      * Wrapped OuterEventMetadataEvent
      */
-    public Vector<Events.OuterEventMetadataEvent> getEvents() {
-        return ((Events.OuterEventMetadata) this.getField("outerEvent")).getField("events");
+    public Vector<Events.OuterEventEventMetadataV0> getEvents() {
+        return ((Events.OuterEventMetadataV0) this.getField("outerEvent")).getField("events");
     }
 
 
@@ -90,13 +83,13 @@ public class MetadataV0 extends Struct implements MetadataInterface {
 
     private List<Object> getArgNames() {
         return this.getModules().stream().map((runtimeModuleMetadata -> {
-            Modules.ModuleMetadata moduleMetadata = runtimeModuleMetadata.getField("module");
-            Modules.CallMetadata call = moduleMetadata.getField("call");
-            Vector<Modules.FunctionMetadata> functions = call.getField("functions");
+            Modules.ModuleMetadataV0 moduleMetadata = runtimeModuleMetadata.getField("module");
+            Modules.CallMetadataV0 call = moduleMetadata.getField("call");
+            Vector<Modules.FunctionMetadataV0> functions = call.getField("functions");
             return functions.stream().map(fn -> {
-                Vector<Modules.FunctionArgumentMetadata> arguments = fn.getField("arguments");
-                return arguments.stream().map((functionArgumentMetadata -> {
-                    Type type = functionArgumentMetadata.getField("type");
+                Vector<Modules.FunctionArgumentMetadataV0> arguments = fn.getField("arguments");
+                return arguments.stream().map((functionArgumentMetadataV0 -> {
+                    Type type = functionArgumentMetadataV0.getField("type");
                     return type.toString();
                 })).collect(Collectors.toList());
             }).collect(Collectors.toList());
@@ -104,21 +97,21 @@ public class MetadataV0 extends Struct implements MetadataInterface {
     }
 
     private List<Object> getEventNames() {
-        return this.getEvents().stream().map(outerEventMetadataEvent -> {
-            return outerEventMetadataEvent.getEvents().stream().map(eventMetadata -> {
+        return this.getEvents().stream().map(outerEventMetadataEventV0 -> {
+            return outerEventMetadataEventV0.getEvents().stream().map(eventMetadata -> {
                 Vector<Type> arguments = eventMetadata.getField("arguments");
-                return arguments.stream().map(argument -> argument.toString()).collect(Collectors.toList());
+                return arguments.stream().map(Text::toString).collect(Collectors.toList());
             });
         }).collect(Collectors.toList());
     }
 
     private List<Object> getStorageNames() {
         return this.getModules().stream().map(runtimeModuleMetadata -> {
-            Option<Modules.StorageMetadata> storage = runtimeModuleMetadata.getField("storage");
+            Option<Storage.StorageMetadataV0> storage = runtimeModuleMetadata.getField("storage");
             if (storage.isSome()) {
-                Vector<Modules.StorageFunctionMetadata> functions = storage.unwrap().getField("functions");
+                Vector<Storage.StorageFunctionMetadataV0> functions = storage.unwrap().getField("functions");
                 return functions.stream().map(fn -> {
-                    Modules.StorageFunctionType type = fn.getField("type");
+                    Storage.StorageFunctionTypeV0 type = fn.getField("type");
                     if (type.isMap()) {
                         return Lists.newArrayList(type.asMap().getField("key").toString(), type.asMap().getField("value").toString());
                     } else {

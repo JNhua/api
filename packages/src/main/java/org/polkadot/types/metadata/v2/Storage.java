@@ -5,27 +5,19 @@ import org.polkadot.types.TypesUtils;
 import org.polkadot.types.codec.EnumType;
 import org.polkadot.types.codec.Struct;
 import org.polkadot.types.codec.Vector;
-import org.polkadot.types.metadata.v1.Storage.MetadataStorageModifier;
+import org.polkadot.types.metadata.v0.Storage.StorageFunctionModifierV0;
 import org.polkadot.types.primitive.*;
 
 public interface Storage {
 
-
-    class Default extends Null {
-    }
-
-    class Optional extends Null {
-    }
-
-    class PlainType extends Type {
-        public PlainType(Object value) {
+    class PlainTypeV2 extends Type {
+        public PlainTypeV2(Object value) {
             super(value);
         }
     }
 
-
-    class MapType extends Struct {
-        public MapType(Object value) {
+    class MapTypeV2 extends Struct {
+        public MapTypeV2(Object value) {
             super(new Types.ConstructorDef()
                             .add("key", Type.class)
                             .add("value", Type.class)
@@ -57,17 +49,16 @@ public interface Storage {
     }
 
 
-    //<PlainType | MapType>
-    class MetadataStorageType extends EnumType {
+    class StorageFunctionTypeV2 extends EnumType {
 
-        public MetadataStorageType(Object value) {
+        public StorageFunctionTypeV2(Object value) {
             this(value, -1);
         }
 
-        public MetadataStorageType(Object value, int index) {
+        public StorageFunctionTypeV2(Object value, int index) {
             super(new Types.ConstructorDef()
-                            .add("PlainType", PlainType.class)
-                            .add("MapType", MapType.class)
+                            .add("PlainType", PlainTypeV2.class)
+                            .add("MapType", MapTypeV2.class)
                     , value, index, null);
         }
 
@@ -81,15 +72,15 @@ public interface Storage {
         /**
          * The value as a mapped value
          */
-        public MapType asMap() {
-            return (MapType) this.value();
+        public MapTypeV2 asMap() {
+            return (MapTypeV2) this.value();
         }
 
         /**
          * The value as a {@link org.polkadot.types.type} value
          */
-        public PlainType asType() {
-            return (PlainType) this.value();
+        public PlainTypeV2 asType() {
+            return (PlainTypeV2) this.value();
         }
 
         /**
@@ -105,7 +96,6 @@ public interface Storage {
         }
     }
 
-
     /**
      * The definition of a storage function
      */
@@ -113,18 +103,18 @@ public interface Storage {
         public MetadataStorageV2(Object value) {
             super(new Types.ConstructorDef()
                             .add("name", Text.class)
-                            .add("modifier", MetadataStorageModifier.class)
-                            .add("type", MetadataStorageType.class)
+                            .add("modifier", StorageFunctionModifierV0.class)
+                            .add("type", StorageFunctionTypeV2.class)
                             .add("fallback", Bytes.class)
-                            .add("docs", Vector.with(TypesUtils.getConstructorCodec(Text.class)))
+                            .add("documentation", Vector.with(TypesUtils.getConstructorCodec(Text.class)))
                     , value);
         }
 
         /**
          * The {@link org.polkadot.types.primitive.Text} documentation
          */
-        public Vector<Text> getDocs() {
-            return this.getField("docs");
+        public Vector<Text> getDocumentation() {
+            return this.getField("documentation");
         }
 
         /**
@@ -137,7 +127,7 @@ public interface Storage {
         /**
          * The MetadataArgument for arguments
          */
-        public MetadataStorageModifier getModifier() {
+        public StorageFunctionModifierV0 getModifier() {
             return this.getField("modifier");
         }
 
@@ -151,7 +141,7 @@ public interface Storage {
         /**
          * The MetadataStorageType
          */
-        public MetadataStorageType getType() {
+        public StorageFunctionTypeV2 getType() {
             return this.getField("type");
         }
     }
