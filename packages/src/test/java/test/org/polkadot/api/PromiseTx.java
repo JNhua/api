@@ -23,7 +23,7 @@ public class PromiseTx {
     static Map<String, Types.KeyringPair> keyring;
 
     //-Djava.library.path=./libs
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Throwable {
         initApi();
 
         //makeTransferSignThenSend();
@@ -124,7 +124,7 @@ public class PromiseTx {
     }
 
 
-    static void makeAProposal() {
+    static void makeAProposal() throws Throwable {
         ((Promise) api
                 .tx()
                 .section("democracy")

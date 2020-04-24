@@ -74,7 +74,7 @@ public class Json extends JSONObject implements Codec {
      * Unimplemented, will throw
      */
     @Override
-    public byte[] toU8a(boolean isBare) {
+    public byte[] toU8a(Object isBare) {
         throw new UnsupportedOperationException();
     }
 }

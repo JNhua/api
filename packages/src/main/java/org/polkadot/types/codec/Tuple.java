@@ -113,7 +113,7 @@ public class Tuple extends AbstractArray<Codec> {
      *               Encodes the value as a Uint8Array as per the parity-codec specifications
      */
     @Override
-    public byte[] toU8a(boolean isBare) {
+    public byte[] toU8a(Object isBare) {
         return Utils.u8aConcat(this.stream().map(e -> e.toU8a(isBare)).collect(Collectors.toList()));
     }
 }

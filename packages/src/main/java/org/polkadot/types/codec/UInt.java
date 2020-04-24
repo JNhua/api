@@ -34,7 +34,7 @@ public class UInt extends AbstractInt implements Compactable{
      * Encodes the value as a Uint8Array as per the parity-codec specifications
      */
     @Override
-    public byte[] toU8a(boolean isBare) {
+    public byte[] toU8a(Object isBare) {
         return Utils.bnToU8a(this, true, false, this.bitLength());
     }
 

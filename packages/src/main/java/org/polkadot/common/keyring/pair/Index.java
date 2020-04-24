@@ -1,14 +1,20 @@
 package org.polkadot.common.keyring.pair;
 
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.polkadot.common.keyring.Types;
 import org.polkadot.common.keyring.address.AddressCodec;
 import org.polkadot.common.keyring.pair.Types.PairInfo;
+import org.polkadot.utils.Utils;
 import org.polkadot.utils.crypto.Nacl;
 import org.polkadot.utils.crypto.Schnorrkel;
 import org.polkadot.utils.crypto.Types.Keypair;
 
 public interface Index {
+
+    byte[] SIG_TYPE_NONE = new byte[0];
+    byte[] SIG_TYPE_ED25519 = new byte[]{0};
+    byte[] SIG_TYPE_SR25519 = new byte[]{1};
 
     static boolean isSr25519(String type) {
         return type.equals(org.polkadot.utils.crypto.Types.KeypairType_SR);
@@ -20,10 +26,21 @@ public interface Index {
                 : Nacl.naclKeypairFromSeed(seed);
     }
 
-    static byte[] sign(String type, byte[] message, final Keypair pair) {
-        return isSr25519(type)
-                ? Schnorrkel.schnorrkelSign(message, pair)
-                : Nacl.naclSign(message, pair);
+    static byte[] multiSignaturePrefix(String type) {
+        return isSr25519(type) ? SIG_TYPE_SR25519 : SIG_TYPE_ED25519;
+    }
+
+    static byte[] sign(String type, byte[] message, final Keypair pair, Types.SignOptions signOptions) {
+        boolean withType = signOptions != null && signOptions.isWithType();
+        return Utils.u8aConcat(Lists.newArrayList(
+                withType
+                        ? multiSignaturePrefix(type)
+                        : SIG_TYPE_NONE
+                ,
+                isSr25519(type)
+                        ? Schnorrkel.schnorrkelSign(message, pair)
+                        : Nacl.naclSign(message, pair)
+        ));
     }
 
     static boolean verify(String type, byte[] message, byte[] signature, byte[] publicKey) {
@@ -36,9 +53,9 @@ public interface Index {
      * Creates a keyring pair object
      * Creates a keyring pair object with provided account public key, metadata, and encoded arguments.
      * The keyring pair stores the account state including the encoded address and associated metadata.
-     * 
+     * <p>
      * It has properties whose values are functions that may be called to perform account actions:
-     * 
+     * <p>
      * - `address` function retrieves the address associated with the account.
      * - `decodedPkcs8` function is called with the account passphrase and account encoded public key.
      * It decodes the encoded public key using the passphrase provided to obtain the decoded account public key
@@ -137,8 +154,8 @@ public interface Index {
         }
 
         @Override
-        public byte[] sign(byte[] message) {
-            return Index.sign(this.type, message, new Keypair(this.pairInfo.publicKey, this.pairInfo.secretKey));
+        public byte[] sign(byte[] message, Types.SignOptions signOptions) {
+            return Index.sign(this.type, message, new Keypair(this.pairInfo.publicKey, this.pairInfo.secretKey), signOptions);
         }
 
         @Override

@@ -117,7 +117,7 @@ public class U8a implements Codec {
      * Encodes the value as a Uint8Array as per the parity-codec specifications
      */
     @Override
-    public byte[] toU8a(boolean isBare) {
+    public byte[] toU8a(Object isBare) {
         return this.raw;
     }
 

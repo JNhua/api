@@ -7,6 +7,7 @@ import org.polkadot.api.Types.QueryableStorageFunction;
 import org.polkadot.api.promise.ApiPromise;
 import org.polkadot.direct.IRpcFunction;
 import org.polkadot.rpc.provider.ws.WsProvider;
+import org.polkadot.types.codec.Struct;
 
 
 public class E03_ListenToBalanceChange {
@@ -40,12 +41,12 @@ public class E03_ListenToBalanceChange {
             // that resolves to the current on-chain value
             QueryableStorage<Promise> query = api.query();
             QueryableModuleStorage<Promise> balances = query.section("balances");
-            QueryableStorageFunction<Promise> freeBalance = balances.function("freeBalance");
-            return
-                    //(Promise<IRpcFunction.E04_Unsubscribe<Promise>>)
-                    freeBalance.call(Alice
-                            , (IRpcFunction.SubscribeCallback) o -> System.out.println("freeBalance result " + o)
-                    );
+            QueryableStorageFunction<Promise> account = balances.function("account");
+            return account.call(Alice);
+//            return
+//                    account.call(Alice
+//                            , (IRpcFunction.SubscribeCallback) o -> System.out.println("freeBalance result " + o)
+//                    );
         }).then((result) -> {
 
                     if (result instanceof IRpcFunction.Unsubscribe) {

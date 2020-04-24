@@ -51,7 +51,7 @@ public class Substrate {
         return new StorageKey.StorageFunction<Function<Integer, StorageKey.StorageFunction<byte[]>>>() {
 
             @Override
-            public Function<Integer, StorageKey.StorageFunction<byte[]>> apply(Object... args) throws InvocationTargetException, IllegalAccessException {
+            public Function<Integer, StorageKey.StorageFunction<byte[]>> apply(Object... args) {
 
                 return  metadataVersion -> {
                     Map<String, Object> metaValues = new LinkedHashMap<>();
@@ -75,11 +75,7 @@ public class Substrate {
                                 new CreateFunction.CreateItemFn(storageMetadataLatest, method, "Substrate", "substrate"),
                                 new CreateFunction.CreateItemOptions( key, metadataVersion, true)
                         );
-                    } catch (NoSuchMethodException e) {
-                        e.printStackTrace();
-                    } catch (InvocationTargetException e) {
-                        e.printStackTrace();
-                    } catch (IllegalAccessException e) {
+                    } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
                         e.printStackTrace();
                     }
 
@@ -98,7 +94,7 @@ public class Substrate {
 
     }
 
-    public static Map<String, StorageKey.StorageFunction> allFunctions = new HashMap<>();
+    public static Map<String, StorageKey.StorageFunction<byte[]>> allFunctions = new HashMap<>();
 
 
     public static StorageKey.StorageFunction code = createRuntimeFunction(

@@ -15,19 +15,6 @@ import java.util.Map;
 
 public class RuntimeVersion extends Struct implements Types.RuntimeVersionInterface {
 
-
-    /**
-     * type RuntimeVersionValue = {
-     * specName?: string,
-     * implName?: string,
-     * authoringVersion?: AnyNumber,
-     * specVersion?: AnyNumber,
-     * implVersion?: AnyNumber,
-     * apis?: Array<RuntimeVersionApiValue>
-     * };
-     */
-
-//  constructor (value?: RuntimeVersionValue | Uint8Array) {
     static Map<String, String> JSON_MAP = new HashMap<>();
 
     static {
@@ -36,6 +23,7 @@ public class RuntimeVersion extends Struct implements Types.RuntimeVersionInterf
         JSON_MAP.put("implVersion", "impl_version");
         JSON_MAP.put("specName", "spec_name");
         JSON_MAP.put("specVersion", "spec_version");
+        JSON_MAP.put("transactionVersion", "transaction_version");
     }
 
     public RuntimeVersion(Object value) {
@@ -46,6 +34,7 @@ public class RuntimeVersion extends Struct implements Types.RuntimeVersionInterf
                         .add("specVersion", U32.class)
                         .add("implVersion", U32.class)
                         .add("apis", Vector.with(TypesUtils.getConstructorCodec(RuntimeVersionApi.class)))
+                        .add("transactionVersion", U32.class)
                 , value, JSON_MAP);
     }
 

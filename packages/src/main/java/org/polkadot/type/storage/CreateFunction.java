@@ -12,7 +12,9 @@ import org.polkadot.utils.UtilsCrypto;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
 
 public class CreateFunction {
 
@@ -109,6 +111,7 @@ public class CreateFunction {
                 // if this fails, we have bigger issues
                 assert hasher2.isPresent() : "2 hashing functions should be defined for DoubleMaps";
 
+
                 Storage.DoubleMapTypeLatest map = meta.getType().asDoubleMap();
                 byte[] val1 = CreateType.createType(map.getKey1().toString(), args[0]).toU8a(false);
                 byte[] val2 = CreateType.createType(map.getKey2().toString(), args[1]).toU8a(false);
@@ -172,7 +175,7 @@ public class CreateFunction {
      *                by us manually at compile time.
      */
     public static StorageKey.StorageFunction<byte[]> createFunction(CreateItemFn itemFn,
-                                                            CreateItemOptions options
+                                                                    CreateItemOptions options
     ) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         final Storage.StorageEntryMetadataLatest meta = itemFn.getMeta();
         final String prefix = itemFn.getPrefix();
@@ -196,9 +199,15 @@ public class CreateFunction {
                 getHasherClass.getMethod(Utils.stringCamelCase(type.asDoubleMap().getHasher().getType()), byte[].class),
                 Optional.ofNullable(getHasherClass.getMethod(Utils.stringCamelCase(type.asDoubleMap().getKey2Hasher().getType()), byte[].class)),
                 options.metaVersion)
-                : createKey(itemFn, stringKey, options.skipHashing
+                : createKey(
+                itemFn,
+                stringKey,
+                options.skipHashing
                         ? getHasherClass.getMethod("identity", byte[].class)
-                        : getHasherClass.getMethod(type.isMap()?Utils.stringCamelCase(type.asMap().getHasher().getType()):"defaultFn", byte[].class),
+                        : getHasherClass.getMethod(
+                        type.isMap()
+                                ? Utils.stringCamelCase(type.asMap().getHasher().getType())
+                                : "defaultFn", byte[].class),
                 options.metaVersion);
 
         storageFn.setMeta(meta);
@@ -217,10 +226,10 @@ public class CreateFunction {
                                 UtilsCrypto.xxhashAsU8a(Utils.stringToU8a("HeadOf" + itemFn.getMethod()), 128)
                         ));
                 storageFn.setIterKey(new StorageKey(extendHeadMeta(itemFn, key)));
-            } else{
+            } else {
                 storageFn.setIterKey(new StorageKey(extendHeadMeta(itemFn, createPrefixedKey(itemFn))));
             }
-        } else if(type.isDoubleMap()){
+        } else if (type.isDoubleMap()) {
             storageFn.setIterKey(new StorageKey(extendHeadMeta(itemFn, createPrefixedKey(itemFn))));
         }
 

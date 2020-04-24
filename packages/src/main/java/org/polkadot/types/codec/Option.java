@@ -131,8 +131,8 @@ public class Option<T extends Codec> extends Base<T> implements Codec {
      * @param isBare true when the value has none of the type-specific prefixes (internal)
      */
     @Override
-    public byte[] toU8a(boolean isBare) {
-        if (isBare) {
+    public byte[] toU8a(Object isBare) {
+        if ((Boolean) isBare) {
             return this.raw.toU8a(true);
         }
 

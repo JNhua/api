@@ -18,7 +18,7 @@ public interface Codec {
         return toU8a(false);
     }
 
-    byte[] toU8a(boolean isBare);
+    byte[] toU8a(Object isBare);
 
     //TODO 2019-05-07 18:27 start check
     //public static Types.ConstructorCodec<? extends  Codec> builder();

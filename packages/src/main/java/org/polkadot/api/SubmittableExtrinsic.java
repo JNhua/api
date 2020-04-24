@@ -16,14 +16,20 @@ import org.polkadot.types.metadata.latest.Calls;
 import org.polkadot.types.primitive.Method;
 import org.polkadot.types.rpc.ExtrinsicStatus;
 import org.polkadot.types.rpc.SignedBlock;
-import org.polkadot.types.type.EventRecord;
-import org.polkadot.types.type.Extrinsic;
-import org.polkadot.types.type.ExtrinsicSignature;
+import org.polkadot.types.type.*;
 import org.polkadot.utils.MapUtils;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.LinkedHashMap;
 import java.util.List;
 
+import static com.onehilltech.promises.Promise.await;
+
 public interface SubmittableExtrinsic<ApplyResult> extends Types.IExtrinsic {
+
+    BigDecimal MAX_FINALITY_LAG = BigDecimal.valueOf(5);
+    BigDecimal MORTAL_PERIOD = BigDecimal.valueOf(5 * 60 * 1000);
 
     ApplyResult send();
 
@@ -32,7 +38,7 @@ public interface SubmittableExtrinsic<ApplyResult> extends Types.IExtrinsic {
     @Override
     Types.IExtrinsic sign(KeyringPair account, Types.SignatureOptions options);
 
-    ApplyResult signAndSend(Object account, Types.SignatureOptions options);
+    ApplyResult signAndSend(Object account, Types.SignatureOptions options) throws Throwable;
 
     ApplyResult signAndSendCb(Object account, StatusCb callback);
 
@@ -83,7 +89,7 @@ public interface SubmittableExtrinsic<ApplyResult> extends Types.IExtrinsic {
     }
 
 
-    abstract class SubmittableExtrinsicImpl extends Extrinsic implements SubmittableExtrinsic {
+    abstract class SubmittableExtrinsicImpl extends ExtrinsicV4 implements SubmittableExtrinsic {
 
         public SubmittableExtrinsicImpl(Types.IExtrinsic _extrinsic) {
             super(_extrinsic);
@@ -138,13 +144,13 @@ public interface SubmittableExtrinsic<ApplyResult> extends Types.IExtrinsic {
         }
 
         @Override
-        public ExtrinsicSignature getSignature() {
-            return (ExtrinsicSignature) _extrinsic.getSignature();
+        public ExtrinsicSignatureV4 getSignature() {
+            return (ExtrinsicSignatureV4) _extrinsic.getSignature();
         }
 
         @Override
-        public Extrinsic addSignature(Object signer, byte[] signature, Object nonce, byte[] era) {
-            return (Extrinsic) _extrinsic.addSignature(signer, signature, nonce, era);
+        public ExtrinsicV4 addSignature(Object signer, byte[] signature, Object payload) throws Exception {
+            return (ExtrinsicV4) _extrinsic.addSignature(signer, signature, payload);
         }
 
         @Override
@@ -178,7 +184,7 @@ public interface SubmittableExtrinsic<ApplyResult> extends Types.IExtrinsic {
         }
 
         @Override
-        public byte[] toU8a(boolean isBare) {
+        public byte[] toU8a(Object isBare) {
             return _extrinsic.toU8a(isBare);
         }
     }
@@ -256,7 +262,7 @@ public interface SubmittableExtrinsic<ApplyResult> extends Types.IExtrinsic {
         DecoratedRpcMethod<Promise> getBlock = apiInterfacePromise.rpc().chain().function("getBlock");
         QueryableStorageFunction<Promise> events = apiInterfacePromise.query().section("system").function("events");
 
-        System.out.println("======try get events" );
+        System.out.println("======try get events");
 
         return Promise.all(
                 getBlock.invoke(blockHash),
@@ -288,7 +294,7 @@ public interface SubmittableExtrinsic<ApplyResult> extends Types.IExtrinsic {
 
     static <ApplyResult> SubmittableExtrinsic<ApplyResult> createSubmittableExtrinsic(ApiBase.ApiType apiType, ApiInterfacePromise apiPromise, Method extrinsic, StatusCb trackingCb,
                                                                                       OnCallDefinition<ApplyResult> onCallDefinition) {
-        Types.ConstructorCodec type = TypeRegistry.getDefaultRegistry().getOrThrow("Extrinsic", "erro");
+        Types.ConstructorCodec type = TypeRegistry.getDefaultRegistry().getOrThrow("ExtrinsicV4", "erro");
         Types.IExtrinsic _extrinsic = (Types.IExtrinsic) type.newInstance(extrinsic);
 
         boolean noStatusCb = apiType == ApiBase.ApiType.RX;
@@ -297,6 +303,7 @@ public interface SubmittableExtrinsic<ApplyResult> extends Types.IExtrinsic {
 
             private Types.SignatureOptions expandOptions(Types.SignatureOptions options) {
                 Types.SignatureOptions signatureOptions = new Types.SignatureOptions();
+                signatureOptions.setGenesisHash(apiPromise.getGenesisHash());
                 signatureOptions.setBlockHash(apiPromise.getGenesisHash());
                 signatureOptions.setVersion(apiPromise.getRuntimeVersion());
 
@@ -312,6 +319,13 @@ public interface SubmittableExtrinsic<ApplyResult> extends Types.IExtrinsic {
                 if (options.getEra() != null) {
                     signatureOptions.setEra(options.getEra());
                 }
+                if (options.getSigner() != null) {
+                    signatureOptions.setSigner(options.getSigner());
+                }
+                if (options.getTip() != null) {
+                    signatureOptions.setTip(options.getTip());
+                }
+
                 return signatureOptions;
             }
 
@@ -387,7 +401,7 @@ public interface SubmittableExtrinsic<ApplyResult> extends Types.IExtrinsic {
             }
 
             @Override
-            public Extrinsic sign(KeyringPair account, Types.SignatureOptions options) {
+            public ExtrinsicV4 sign(KeyringPair account, Types.SignatureOptions options) {
                 /*
                  // HACK here we actually override nonce if it was specified (backwards compat for
                   // the previous signature - don't let userspace break, but allow then time to upgrade)
@@ -413,8 +427,8 @@ public interface SubmittableExtrinsic<ApplyResult> extends Types.IExtrinsic {
                 //AtomicInteger updateId = new AtomicInteger();
 
                 QueryableModuleStorage<Promise> system = apiPromise.query().section("system");
-                QueryableStorageFunction<Promise> accountNonce = system.function("accountNonce");
-                Promise call = accountNonce.call(address);
+                QueryableStorageFunction<Promise> accountFunction = system.function("account");
+                Promise accountInfo = accountFunction.call(address);
 
                 SubmittableExtrinsic self = this;
 
@@ -422,17 +436,32 @@ public interface SubmittableExtrinsic<ApplyResult> extends Types.IExtrinsic {
                         new OnCallFunction() {
                             @Override
                             public Promise apply(Object... params) {
-                                return call.then((nonce) -> {
+                                return accountInfo.then((result) -> {
+                                    Header current = (Header) await(apiPromise.rpc().chain().function("getHeader").invoke());
+                                    Hash blockHash = current.getHash();
+
+                                    // TODO: add api.consts
+                                    final BigDecimal expectedBlockTime = BigDecimal.valueOf(3000);
+                                    Number mortalLength = MORTAL_PERIOD.divide(expectedBlockTime).add(MAX_FINALITY_LAG);
+                                    LinkedHashMap<String, Number> mortalEra = new LinkedHashMap();
+                                    mortalEra.put("current", current.getNumber());
+                                    mortalEra.put("period", mortalLength);
+                                    ExtrinsicEra era = new ExtrinsicEra(mortalEra);
+
+                                    AccountInfo accountInfo = (AccountInfo) result;
                                     if (isKeyringPair) {
-                                        options.setNonce(nonce);
+                                        options.setNonce(accountInfo.getNonce());
+                                        options.setBlockHash(blockHash);
+                                        options.setEra(era);
                                         self.sign((KeyringPair) account, options);
                                         return Promise.value(-1);
                                     } else {
                                         assert apiPromise.getSigner() != null : "no signer exists";
 
-                                        options.setBlockHash(apiPromise.getGenesisHash());
+                                        options.setBlockHash(blockHash);
+                                        options.setGenesisHash(apiPromise.getGenesisHash());
                                         options.setVersion(apiPromise.getRuntimeVersion());
-                                        options.setNonce(nonce);
+                                        options.setNonce(accountInfo.getNonce());
                                         Promise<Integer> sign = apiPromise.getSigner().sign(_extrinsic, address, options);
                                         return sign;
                                     }

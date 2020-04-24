@@ -30,7 +30,7 @@ public class E06_MakeTransfer {
         System.loadLibrary("jni");
         System.out.println("load ");
     }
-    //-Djava.library.path=./libs
+
     public static void main(String[] args) throws InterruptedException {
         // Create an await for the API
         //Promise<ApiPromise> ready = ApiPromise.create();
@@ -53,7 +53,7 @@ public class E06_MakeTransfer {
             Keyring keyring = new Keyring(options);
             Types.KeyringPair alice = keyring.addFromUri("//Alice", null, options.getType());
             org.polkadot.api.Types.SubmittableExtrinsicFunction function = api.tx().section("balances").function("transfer");
-            SubmittableExtrinsic<Promise> transfer = function.call(BOB, 111);
+            SubmittableExtrinsic<Promise> transfer = function.call(BOB, 12345);
             // Add alice to our keyring with a hard-deived path (empty phrase, so uses dev)
             //const alice = keyring.addFromUri('//Alice');
             return transfer.signAndSend(alice, new org.polkadot.types.Types.SignatureOptions());

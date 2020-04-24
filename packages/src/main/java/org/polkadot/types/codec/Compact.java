@@ -144,7 +144,7 @@ public class Compact extends Base<Compactable> implements Codec {
      * @param isBare true when the value has none of the type-specific prefixes (internal)
      */
     @Override
-    public byte[] toU8a(boolean isBare) {
+    public byte[] toU8a(Object isBare) {
         return Utils.compactToU8a(this.raw.toBn());
     }
 }

@@ -41,7 +41,7 @@ public interface StorageV11 {
                             .add("Twox128", Twox128.class)
                             .add("Twox256", Twox256.class)
                             .add("Twox64Concat", Twox64Concat.class)
-                            .add("Identitiy", Identity.class)
+                            .add("Identity", Identity.class)
                     , value, index, null);
         }
 

@@ -76,8 +76,8 @@ public class Bytes extends U8a {
      * Encodes the value as a Uint8Array as per the parity-codec specifications
      */
     @Override
-    public byte[] toU8a(boolean isBare) {
-        return isBare
+    public byte[] toU8a(Object isBare) {
+        return (Boolean) isBare
                 ? super.toU8a(isBare)
                 : Utils.compactAddLength(this.raw);
     }

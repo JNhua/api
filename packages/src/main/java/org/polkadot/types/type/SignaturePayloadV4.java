@@ -3,8 +3,13 @@ package org.polkadot.types.type;
 import org.polkadot.common.keyring.Types.KeyringPair;
 import org.polkadot.types.Types;
 import org.polkadot.types.codec.Struct;
+import org.polkadot.types.primitive.Bytes;
 import org.polkadot.types.primitive.Method;
+import org.polkadot.types.primitive.U32;
 import org.polkadot.utils.UtilsCrypto;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A signing payload for an {@link org.polkadot.type.extrinsics}. For the final encoding, it is variable length based
@@ -15,31 +20,35 @@ import org.polkadot.utils.UtilsCrypto;
  * 2 bytes The Transaction Era as provided in the transaction itself.
  * 32 bytes The hash of the authoring block implied by the Transaction Era and the current block.
  */
-public class SignaturePayload extends Struct {
+public class SignaturePayloadV4 extends Struct {
 
     public static class SignaturePayloadValue {
-
-        //nonce? AnyNumber,
-        //method? Method,
-        //era? AnyU8a | ExtrinsicEra
-        //blockHash? AnyU8a
         Object nonce;
         Method method;
         ExtrinsicEra era;
         Hash blockHash;
+        BalanceCompact tip;
+        U32 specVersion;
+        Hash genesisHash;
     }
 
 
     protected byte[] _signature;
 
-    //constructor (value? SignaturePayloadValue | Uint8Array) {
-    public SignaturePayload(Object value) {
+    public SignaturePayloadV4(Object value) {
         super(new Types.ConstructorDef()
                         .add("nonce", NonceCompact.class)
-                        .add("method", Method.class)
+                        .add("method", Bytes.class)
                         .add("era", ExtrinsicEra.class)
-                        .add("blockHash", Hash.class),
+                        .add("blockHash", Hash.class)
+                        .add("tip", BalanceCompact.class)
+                        .add("specVersion", U32.class)
+                        .add("genesisHash", Hash.class),
                 value);
+    }
+
+    public BalanceCompact getTip(){
+        return this.getField("tip");
     }
 
     /**
@@ -51,16 +60,16 @@ public class SignaturePayload extends Struct {
 
 
     /**
-     * The block {@link Hash} the signature applies to (mortal/immortal)
+     * The block {@link org.polkadot.types.type.Hash} the signature applies to (mortal/immortal)
      */
     public Hash getBlockHash() {
         return this.getField("blockHash");
     }
 
     /**
-     * The {@link Method} contained in the payload
+     * The {@link org.polkadot.types.primitive.Bytes} contained in the payload
      */
-    public Method getMethod() {
+    public Bytes getMethod() {
         return this.getField("method");
     }
 
@@ -72,7 +81,7 @@ public class SignaturePayload extends Struct {
     }
 
     /**
-     * The {@link Nonce}
+     * The {@link org.polkadot.types.type.Nonce}
      */
     public NonceCompact getNonce() {
         return this.getField("nonce");
@@ -95,7 +104,9 @@ public class SignaturePayload extends Struct {
      */
     public byte[] sign(KeyringPair signerPair, org.polkadot.common.keyring.Types.SignOptions signOptions) {
 
-        byte[] u8a = this.toU8a();
+        byte[] u8a = this.toU8a(new HashMap<String, Boolean>(1) {{
+            put("method", true);
+        }});
         byte[] encoded = u8a.length > 256
                 ? UtilsCrypto.blake2AsU8a(u8a)
                 : u8a;

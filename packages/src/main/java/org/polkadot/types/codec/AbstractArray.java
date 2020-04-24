@@ -79,9 +79,9 @@ public class AbstractArray<T extends Codec> extends ArrayList<T> implements Code
 	* @param isBare true when the value has none of the type-specific prefixes (internal)
 	*/
     @Override
-    public byte[] toU8a(boolean isBare) {
+    public byte[] toU8a(Object isBare) {
         List<byte[]> encoded = this.stream().map(e -> e.toU8a(isBare)).collect(Collectors.toList());
-        if (!isBare) {
+        if (!(Boolean) isBare) {
             encoded.add(0, Utils.compactToU8a(this.length()));
         }
         return Utils.u8aConcat(encoded);

@@ -6,7 +6,6 @@ import org.polkadot.types.Types;
 import org.polkadot.types.codec.Struct;
 import org.polkadot.types.primitive.Method;
 import org.polkadot.types.primitive.U8;
-import org.polkadot.types.rpc.RuntimeVersion;
 import org.polkadot.utils.Utils;
 
 import java.util.HashMap;
@@ -14,7 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * A container for the {@link org.polkadot.types.type.Signature} associated with a specific {@link org.polkadot.type.extrinsics}
+ * A container for the {@link Signature} associated with a specific {@link org.polkadot.type.extrinsics}
  */
 public class ExtrinsicSignature extends Struct implements Types.IExtrinsicSignature {
 
@@ -89,21 +88,21 @@ public class ExtrinsicSignature extends Struct implements Types.IExtrinsicSignat
 
 
     /**
-     * The {@link org.polkadot.types.type.Nonce} for the signature
+     * The {@link Nonce} for the signature
      */
     public NonceCompact getNonce() {
         return this.getField("nonce");
     }
 
     /**
-     * The actuall {@link org.polkadot.types.type.Signature} hash
+     * The actuall {@link Signature} hash
      */
     public Signature getSignature() {
         return this.getField("signature");
     }
 
     /**
-     * The {@link org.polkadot.types.type.Address} that signed
+     * The {@link Address} that signed
      */
     public Address getSigner() {
         return this.getField("signer");
@@ -133,11 +132,10 @@ public class ExtrinsicSignature extends Struct implements Types.IExtrinsicSignat
     /**
      * Adds a raw signature
      */
-    //addSignature (_signer: Address | Uint8Array, _signature: Uint8Array, _nonce: AnyNumber, _era: Uint8Array = IMMORTAL_ERA): ExtrinsicSignature {
-    ExtrinsicSignature addSignature(Object _signer, byte[] _signature, Object _nonce, byte[] _era) {
+    ExtrinsicSignature addSignature(Object _signer, byte[] _signature, SignaturePayload payload) throws Exception {
         Address signer = new Address(_signer);
-        NonceCompact nonce = new NonceCompact(_nonce);
-        ExtrinsicEra era = new ExtrinsicEra(_era);
+        NonceCompact nonce = new NonceCompact(payload.getNonce());
+        ExtrinsicEra era = new ExtrinsicEra(payload.getEra());
         Signature signature = new Signature(_signature);
         return this.injectSignature(signature, signer, nonce, era);
     }
@@ -146,7 +144,6 @@ public class ExtrinsicSignature extends Struct implements Types.IExtrinsicSignat
     /**
      * Generate a payload and pplies the signature from a keypair
      */
-    //sign (method: Method, account: KeyringPair, { blockHash, era, nonce, version }: SignatureOptions): ExtrinsicSignature {
     ExtrinsicSignature sign(Method method, KeyringPair account, Types.SignatureOptions signatureOptions) {
 
 
@@ -160,17 +157,17 @@ public class ExtrinsicSignature extends Struct implements Types.IExtrinsicSignat
 
         SignaturePayload signingPayload = new SignaturePayload(values);
 
-        Signature signature = new Signature(signingPayload.sign(account, (RuntimeVersion) signatureOptions.getVersion()));
+        Signature signature = new Signature(signingPayload.sign(account, null));
 
         return this.injectSignature(signature, signer, signingPayload.getNonce(), signingPayload.getEra());
     }
 
     /**
      * @param isBare true when the value has none of the type-specific prefixes (internal)
-     * Encodes the value as a Uint8Array as per the parity-codec specifications
+     *               Encodes the value as a Uint8Array as per the parity-codec specifications
      */
     @Override
-    public byte[] toU8a(boolean isBare) {
+    public byte[] toU8a(Object isBare) {
         if (this.isSigned()) {
             return super.toU8a(isBare);
         } else {

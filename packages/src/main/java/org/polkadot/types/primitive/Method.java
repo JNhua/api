@@ -161,6 +161,13 @@ public class Method extends Struct implements Types.IMethod {
 
     protected Calls.FunctionMetadataLatest meta;
 
+    public Method(Object value){
+        super(new Types.ConstructorDef()
+                        .add("callIndex", MethodIndex.class)
+                        .add("args", Struct.with(decodeMethod(value, null).argsDef))
+                , decodeMethod(value, null));
+    }
+
     public Method(Object value, Calls.FunctionMetadataLatest meta) {
         super(new Types.ConstructorDef()
                         .add("callIndex", MethodIndex.class)

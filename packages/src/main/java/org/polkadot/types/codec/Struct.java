@@ -7,6 +7,7 @@ import org.polkadot.common.ReflectionUtils;
 import org.polkadot.types.Codec;
 import org.polkadot.types.Types;
 import org.polkadot.types.Types.ConstructorDef;
+import org.polkadot.types.primitive.Bool;
 import org.polkadot.types.primitive.Method;
 import org.polkadot.utils.Utils;
 import org.slf4j.Logger;
@@ -190,7 +191,7 @@ public class Struct
     }
 
     /**
-     * Converts the Object to an standard JavaScript Array
+     * Converts the Object to an standard Array
      */
     public List<Codec> toArray() {
         return Lists.newArrayList(this.values());
@@ -210,7 +211,7 @@ public class Struct
      */
     @Override
     public String toHex() {
-        throw new UnsupportedOperationException();
+        return Utils.u8aToHex(this.toU8a());
     }
 
     /**
@@ -234,38 +235,16 @@ public class Struct
      * @param isBare true when the value has none of the type-specific prefixes (internal)
      */
     @Override
-    public byte[] toU8a(boolean isBare) {
-
-
-        ///////////
+    public byte[] toU8a(Object isBare) {
         List<byte[]> collect = Lists.newArrayList();
-        for (Codec entry : this.toArray()) {
-            byte[] bytes = entry.toU8a(isBare);
-            //logger.info(" entry {}, {}", entry.getClass().getSimpleName(), Utils.toU8aString(bytes));
+        for (java.util.Map.Entry<String, Codec> entry : this.entrySet()) {
+            byte[] bytes;
+            bytes = entry.getValue().toU8a(isBare instanceof HashMap? ((Map<String, Boolean>) isBare).get(entry.getKey()): (Boolean) isBare);
             collect.add(bytes);
         }
 
-        ///////
-        //List<byte[]> collect = this.toArray().stream()
-        //        .map(entry -> {
-        //            byte[] bytes = entry.toU8a(isBare);
-        //            if (entry.getClass().getSimpleName().equals("Struct") && bytes.length == 0) {
-        //                System.out.println();
-        //            }
-        //            logger.info(" entry {}, {}", entry.getClass().getSimpleName(), Utils.toU8aString(bytes));
-        //            return bytes;
-        //        })
-        //        .collect(Collectors.toList());
-        ///////
-
         byte[] bytes = Utils.u8aConcat(collect);
         return bytes;
-
-        //    return u8aConcat(
-        //  ...this.toArray().map((entry) =>
-        //            entry.toU8a(isBare)
-        //  )
-        //);
 
     }
 

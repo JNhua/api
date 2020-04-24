@@ -3,7 +3,9 @@ package org.polkadot.types.type;
 import org.polkadot.types.Types;
 import org.polkadot.types.codec.Struct;
 import org.polkadot.types.primitive.Bytes;
+import org.polkadot.types.primitive.U32;
 import org.polkadot.types.primitive.U64;
+import org.polkadot.types.primitive.U8;
 
 /**
  * An Account information structure for contracts
@@ -11,24 +13,22 @@ import org.polkadot.types.primitive.U64;
 public class AccountInfo extends Struct {
     public AccountInfo(Object value) {
         super(new Types.ConstructorDef()
-                        .add("trieId", Bytes.class)
-                        .add("currentMemStored", U64.class)
+                        .add("nonce", U32.class)
+                        .add("refCount", U8.class)
+                        .add("data", AccountData.class)
                 , value
         );
     }
 
-
-    /**
-     * The size of stored value in octet
-     */
-    public U64 getCurrentMemStored() {
-        return this.getField("currentMemStored");
+    public U32 getNonce() {
+        return this.getField("nonce");
     }
 
-    /**
-     * Unique ID for the subtree encoded as a byte
-     */
-    public Bytes getTrieId() {
-        return this.getField("trieId");
+    public U8 getRefCount() {
+        return this.getField("refCount");
+    }
+
+    public AccountData getData() {
+        return this.getField("data");
     }
 }

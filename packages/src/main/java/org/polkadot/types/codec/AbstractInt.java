@@ -129,5 +129,5 @@ public abstract class AbstractInt extends BigInteger implements Codec {
      *               Encodes the value as a Uint8Array as per the parity-codec specifications
      */
     @Override
-    public abstract byte[] toU8a(boolean isBare);
+    public abstract byte[] toU8a(Object isBare);
 }

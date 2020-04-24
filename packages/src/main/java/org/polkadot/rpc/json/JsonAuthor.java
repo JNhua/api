@@ -19,13 +19,13 @@ public class JsonAuthor {
 
     static final JsonRpcMethodOpt submitExtrinsic = new JsonRpcMethodOpt(
             "Submit a fully formatted extrinsic for block inclusion",
-            Lists.newArrayList(new JsonRpcParam("extrinsic", "Extrinsic")),
+            Lists.newArrayList(new JsonRpcParam("extrinsic", "ExtrinsicV4")),
             "Hash",
             true);
 
     static final JsonRpcMethodOpt submitAndWatchExtrinsic = new JsonRpcMethodOpt(
             "Subscribe and watch an extrinsic until unsubscribed",
-            Lists.newArrayList(new JsonRpcParam("extrinsic", "Extrinsic")),
+            Lists.newArrayList(new JsonRpcParam("extrinsic", "ExtrinsicV4")),
             new String[]{
                     "extrinsicUpdate",
                     "submitAndWatchExtrinsic",

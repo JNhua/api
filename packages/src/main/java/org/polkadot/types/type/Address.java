@@ -133,10 +133,10 @@ public class Address extends Base<Codec> implements Codec {
      * @param isBare true when the value has none of the type-specific prefixes (internal)
      */
     @Override
-    public byte[] toU8a(boolean isBare) {
+    public byte[] toU8a(Object isBare) {
         byte[] encoded = this.raw.toU8a();
         encoded = ArrayUtils.subarray(encoded, 0, this.getRawLength());
-        return isBare
+        return (Boolean)isBare
                 ? encoded
                 : Utils.u8aConcat(Lists.newArrayList(
                 this.raw instanceof AccountIndex

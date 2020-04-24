@@ -1,8 +1,10 @@
 package org.polkadot.types;
 
+import org.polkadot.api.Types.Signer;
 import org.polkadot.types.codec.U8a;
 import org.polkadot.types.metadata.latest.Calls;
 import org.polkadot.types.primitive.Method;
+import org.polkadot.types.type.ExtrinsicEra;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -21,18 +23,11 @@ public interface Types {
     }
 
 
-    //interface Constructor<T extends Codec> {
-    //    T instance(List<?> value);
-    //}
-
     interface IHash extends Codec {
     }
-    //interface IHash extends U8a {}
-
 
     interface ConstructorCodec<T extends Codec> {
 
-        //T newInstance();
         T newInstance(Object... values);
 
         Class<T> getTClass();
@@ -41,7 +36,7 @@ public interface Types {
     class ConstructorDef {
 
         List<String> names = new ArrayList<>();
-        //List<Class<? extends Codec>> types = new ArrayList<>();
+
         List<ConstructorCodec> types = new ArrayList<>();
 
         List<Class> classes = new ArrayList<>();
@@ -75,66 +70,15 @@ public interface Types {
             for (ConstructorCodec type : list) {
                 String simpleName = type.getTClass().getSimpleName();
                 this.add(simpleName, type);
-
-                //Type gType = ((ParameterizedType) type.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-                //String name = gType instanceof Class ? ((Class) gType).getSimpleName() : gType.getTypeName();
-                //this.add(name, type);
             }
         }
-
-        //
-        //public ConstructorDef(List<CreateType.TypeDef> defs) {
-        //    defs.stream().forEach(def -> {
-        //        names.add(def.getName());
-        //        types.add(def.getType())
-        //    });
-        //}
     }
-
-    //class TypeDef {
-    //    Map<String, Codec> codecMap;
-    //}
 
     class RegistryTypes {
-        //  [name: string]: Constructor | string | { [name: string]: string }
         Map<String, Class<?>> registryTypes;
     }
-    /*
 
-interface CodecArgObject {
-  [index: string]: CodecArg;
-}
-
-interface CodecArgArray extends Array<CodecArg> { }
-
-
-export interface Constructor<T = Codec> {
-  new(...value: Array<any>): T;
-}
-
-export type ConstructorDef<T = Codec> = { [index: string]: Constructor<T> };
-
-export type TypeDef = { [index: string]: Codec };
-
-export type RegistryTypes = {
-  [name: string]: Constructor | string | { [name: string]: string }
-};
-
-    * */
-
-    //export interface ArgsDef {
-    //[index: string]: Constructor;
-    //}
     interface IMethod extends Codec {
-
-        //export interface IMethod extends Codec {
-        //    readonly args: Array<Codec>;
-        //    readonly argsDef: ArgsDef;
-        //    readonly callIndex: Uint8Array;
-        //    readonly data: Uint8Array;
-        //    readonly hasOrigin: boolean;
-        //    readonly meta: FunctionMetadata;
-        //}
 
         List<Codec> getArgs();
 
@@ -149,15 +93,6 @@ export type RegistryTypes = {
         Calls.FunctionMetadataLatest getMeta();
     }
 
-
-    //export interface RuntimeVersionInterface {
-    //    readonly apis: Array<any>;
-    //    readonly authoringVersion: BN;
-    //    readonly implName: String;
-    //    readonly implVersion: BN;
-    //    readonly specName: String;
-    //    readonly specVersion: BN;
-    //}
 
     interface RuntimeVersionInterface {
         List<? extends Object> getApis();
@@ -185,7 +120,7 @@ export type RegistryTypes = {
 
         //addSignature(signer:Address|Uint8Array, signature:Uint8Array, nonce:AnyNumber, era?:Uint8Array):IExtrinsic;
 
-        IExtrinsic addSignature(Object signer, byte[] signature, Object nonce, byte[] era);
+        IExtrinsic addSignature(Object signer, byte[] signature, Object payload) throws Exception;
 
         //sign(account:KeyringPair, options:SignatureOptions):IExtrinsic;
         IExtrinsic sign(org.polkadot.common.keyring.Types.KeyringPair account, Types.SignatureOptions options);
@@ -193,26 +128,35 @@ export type RegistryTypes = {
 
     class SignatureOptions {
         Object blockHash = null;
-        byte[] era = null;
+        ExtrinsicEra era = null;
+        Object genesisHash = null;
         Object nonce = null;
         RuntimeVersionInterface version = null;
+        Signer signer = null;
+        Object tip = null;
 
         public Object getBlockHash() {
             return blockHash;
         }
 
-        public SignatureOptions setBlockHash(Object blockHash) {
+        public void setBlockHash(Object blockHash) {
             this.blockHash = blockHash;
-            return this;
         }
 
-        public byte[] getEra() {
+        public void setGenesisHash(Object genesisHash) {
+            this.genesisHash = genesisHash;
+        }
+
+        public Object getGenesisHash(){
+            return genesisHash;
+        }
+
+        public ExtrinsicEra getEra() {
             return era;
         }
 
-        public SignatureOptions setEra(byte[] era) {
+        public void setEra(ExtrinsicEra era) {
             this.era = era;
-            return this;
         }
 
         public Object getNonce() {
@@ -231,6 +175,22 @@ export type RegistryTypes = {
         public SignatureOptions setVersion(RuntimeVersionInterface version) {
             this.version = version;
             return this;
+        }
+
+        public Signer getSigner(){
+            return signer;
+        }
+
+        public void setSigner(Signer signer){
+            this.signer = signer;
+        }
+
+        public Object getTip(){
+            return this.tip;
+        }
+
+        public void setTip(Object tip){
+            this.tip = tip;
         }
 
     }

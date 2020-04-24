@@ -79,7 +79,7 @@ public class Bool implements Codec {
    * @param isBare true when the value has none of the type-specific prefixes (internal)
    */
     @Override
-    public byte[] toU8a(boolean isBare) {
+    public byte[] toU8a(Object isBare) {
         return new byte[]{(byte) (this.raw ? 1 : 0)};
     }
 

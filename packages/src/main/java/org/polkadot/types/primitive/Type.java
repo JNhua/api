@@ -76,7 +76,7 @@ public class Type extends Text {
     }
 
     @Override
-    public byte[] toU8a(boolean isBare) {
+    public byte[] toU8a(Object isBare) {
         // Note Since we are mangling what we get in beyond recognition, we really should
         // not allow the re-encoding. Additionally, this is probably more of a decoder-only
         // helper, so treat it as such.

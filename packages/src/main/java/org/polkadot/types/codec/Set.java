@@ -171,7 +171,7 @@ public class Set extends Base<List<String>> implements Codec {
      * Encodes the value as a Uint8Array as per the parity-codec specifications
      */
     @Override
-    public byte[] toU8a(boolean isBare) {
+    public byte[] toU8a(Object isBare) {
         return new byte[]{UnsignedBytes.checkedCast(this.valueEncoded())};
     }
 

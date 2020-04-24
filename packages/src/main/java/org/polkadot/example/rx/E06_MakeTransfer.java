@@ -46,7 +46,12 @@ public class E06_MakeTransfer {
             Types.KeyringPair alice = keyring.addFromUri("//Alice", null, options.getType());
             org.polkadot.api.Types.SubmittableExtrinsicFunction function = apiRx.tx().section("balances").function("transfer");
             SubmittableExtrinsic<Observable> transfer = function.call(BOB, 111);
-            return transfer.signAndSend(alice, new org.polkadot.types.Types.SignatureOptions());
+            try {
+                return transfer.signAndSend(alice, new org.polkadot.types.Types.SignatureOptions());
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+            return null;
         }).subscribe((result) -> {
             System.out.println("Transfer sent with hash " + result);
         });

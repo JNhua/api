@@ -19,21 +19,17 @@ public class FromMetadata {
      */
     public static Method.ModulesWithMethods fromMetadata(MetadataLatest metadata) {
         AtomicInteger sectionIndex = new AtomicInteger(-1);
-        AtomicInteger methodIndex = new AtomicInteger(-1);
 
         metadata.getModules()
                 .stream()
                 .filter(
                         (moduleMetadata) -> {
-                            if (moduleMetadata.getCalls().isNone()) {
-                                return false;
-                            } else {
-                                return moduleMetadata.getCalls().unwrap().length() > 0;
-                            }
+                            return moduleMetadata.getCalls().isSome();
                         }
                 )
                 .forEach(
                         (moduleMetadata) -> {
+                            AtomicInteger methodIndex = new AtomicInteger(-1);
                             String section = Utils.stringCamelCase(moduleMetadata.getName().toString());
                             sectionIndex.getAndIncrement();
 

@@ -118,7 +118,7 @@ public class Enum extends Base<Number> implements Codec {
    * @param isBare true when the value has none of the type-specific prefixes (internal)
    */
     @Override
-    public byte[] toU8a(boolean isBare) {
+    public byte[] toU8a(Object isBare) {
         //return new Uint8Array([this.raw]);
         return new byte[]{this.raw.byteValue()};
     }

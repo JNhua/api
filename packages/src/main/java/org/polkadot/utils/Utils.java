@@ -11,7 +11,7 @@ import org.polkadot.types.codec.Compact;
 import org.polkadot.types.codec.Option;
 import org.polkadot.types.codec.U8a;
 import org.polkadot.types.type.Event;
-import org.polkadot.types.type.ExtrinsicSignature;
+import org.polkadot.types.type.ExtrinsicSignatureV4;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -220,9 +220,8 @@ public class Utils {
 
     /**
      * @param value              The value to convert
-     * @param options            Options to pass while converting
-     * @param options.isLe       Convert using Little Endian
-     * @param options.isNegative Convert using two's complement
+     * @param isLe               Convert using Little Endian
+     * @param isNegative         Convert using two's complement
      *                           Creates a BN from a Uint8Array object.
      *                           `UInt8Array` input values return the actual BN. `null` or `undefined` values returns an `0x0` value.
      *                           **example**
@@ -739,7 +738,7 @@ public class Utils {
     }
 
     public static boolean isContainer(Object object) {
-        if (object instanceof ExtrinsicSignature) {
+        if (object instanceof ExtrinsicSignatureV4) {
             return false;
         }
 

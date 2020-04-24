@@ -41,6 +41,7 @@ public class MetadataVersioned extends Struct implements Types.MetadataInterface
                             .add("MetadataV9", MetadataV3.class)
                             .add("MetadataV10", MetadataV3.class)
                             .add("MetadataV11", MetadataV11.class)
+                            .add("MetadataLatest", MetadataLatest.class)
                     , value, -1, null
             );
         }
@@ -85,7 +86,7 @@ public class MetadataVersioned extends Struct implements Types.MetadataInterface
         /**
          * Returns the wrapped values as a latest version object
          */
-        public MetadataLatest asLatest () {
+        public MetadataLatest asLatest() {
             return ((MetadataLatest) this.value());
         }
 

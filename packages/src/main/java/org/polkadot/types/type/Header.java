@@ -17,7 +17,6 @@ import java.util.List;
  */
 public class Header extends Struct {
 
-    //  constructor (value?: HeaderValue | Uint8Array | null) {
     public Header(Object value) {
         super(new Types.ConstructorDef()
                         .add("parentHash", Hash.class)

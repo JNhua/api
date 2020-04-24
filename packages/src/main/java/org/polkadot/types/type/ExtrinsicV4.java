@@ -10,12 +10,14 @@ import org.polkadot.types.codec.Struct;
 import org.polkadot.types.codec.U8a;
 import org.polkadot.types.metadata.latest.Calls;
 import org.polkadot.types.primitive.Method;
+import org.polkadot.types.primitive.U8;
 import org.polkadot.utils.Utils;
 import org.polkadot.utils.UtilsCrypto;
 
 import java.math.BigInteger;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 
 
 /**
@@ -26,54 +28,69 @@ import java.util.List;
  * - signed, to create a transaction
  * - left as is, to create an inherent
  */
-public class Extrinsic extends Struct implements Types.IExtrinsic {
+public class ExtrinsicV4 extends Struct implements Types.IExtrinsic {
 
-    public static class ExtrinsicValue {
-        Method method;
-        ExtrinsicSignature signature;
+    static class ExtrinsicValueV4{
+        private Method method;
+        private ExtrinsicSignatureV4 signature;
+
+        public ExtrinsicValueV4(Method method, ExtrinsicSignatureV4 extrinsicSignature){
+            this.method = method;
+            this.signature = extrinsicSignature;
+        }
     }
-    
-    public Extrinsic(Object value) {
+
+    public ExtrinsicV4(Object value) {
         super(new Types.ConstructorDef()
-                        .add("signature", ExtrinsicSignature.class)
+                        .add("version", U8.class)
+                        .add("signature", ExtrinsicSignatureV4.class)
                         .add("method", Method.class)
                 , decodeExtrinsic(value));
     }
 
+//    public ExtrinsicV4(Object value, boolean isSigned) {
+//        super(new Types.ConstructorDef()
+//                        .add("signature", ExtrinsicSignatureV4.class)
+//                        .add("method", Method.class)
+//                , decodeExtrinsic(value, isSigned));
+//    }
+
     static Object decodeExtrinsic(Object value) {
-        if (Utils.isU8a(value)) {
-            Pair<Integer, BigInteger> pair = Utils.compactFromU8a(value);
-            int offset = pair.getKey();
-            int length = pair.getValue().intValue();
-
-            return ArrayUtils.subarray((byte[]) value, offset, offset + length);
-        } else if (value.getClass().isArray() || Utils.isHex(value)) {
-            // Instead of the block below, it should simply be:
-            // return Extrinsic.decodeExtrinsic(hexToU8a(value as string));
-            byte[] u8a = Utils.u8aToU8a(value);
-
-            // HACK 11 Jan 2019 - before https://github.com/paritytech/substrate/pull/1388
-            // extrinsics didn't have the length, cater for both approaches
-            Pair<Integer, BigInteger> pair = Utils.compactFromU8a(u8a);
-            int offset = pair.getKey();
-            int length = pair.getValue().intValue();
-
-            boolean withPrefix = u8a.length == (offset + length);
-            return decodeExtrinsic(withPrefix
-                    ? u8a
-                    : Utils.compactAddLength(u8a));
+        if(value instanceof ExtrinsicV4){
+            return value;
         } else if (value instanceof Method) {
             LinkedHashMap<Object, Object> values = Maps.newLinkedHashMap();
+            values.put("version", 4 + 128);
             values.put("method", value);
             return values;
+        } else if (Utils.isU8a(value)) {
+            ExtrinsicSignatureV4 extrinsicSignature = new ExtrinsicSignatureV4(value);
+            Method method = new Method(ArrayUtils.subarray((byte[])value, extrinsicSignature.getEncodedLength(), ((byte[]) value).length));
+            return new ExtrinsicValueV4(method, extrinsicSignature);
         }
 
         return value;
     }
 
+//    static Object decodeExtrinsic(Object value, boolean isSigned) {
+//        if(value instanceof ExtrinsicV4){
+//            return value;
+//        } else if (value instanceof Method) {
+//            LinkedHashMap<Object, Object> values = Maps.newLinkedHashMap();
+//            values.put("method", value);
+//            return values;
+//        } else if (Utils.isU8a(value)) {
+//            ExtrinsicSignatureV4 extrinsicSignature = new ExtrinsicSignatureV4(value, isSigned);
+//            Method method = new Method(ArrayUtils.subarray((byte[])value, extrinsicSignature.getEncodedLength(), ((byte[]) value).length));
+//            return new ExtrinsicValueV4(method, extrinsicSignature);
+//        }
+//
+//        return value;
+//    }
+
 
     /**
-     * The arguments passed to for the call, exposes args so it is compatible with {@link Method}
+     * The arguments passed to for the call, exposes args so it is compatible with {@link org.polkadot.types.primitive.Method}
      */
     @Override
     public List<Codec> getArgs() {
@@ -81,7 +98,7 @@ public class Extrinsic extends Struct implements Types.IExtrinsic {
     }
 
     /**
-     * Thge argument defintions, compatible with {@link Method}
+     * Thge argument defintions, compatible with {@link org.polkadot.types.primitive.Method}
      */
     @Override
     public Types.ConstructorDef getArgsDef() {
@@ -124,7 +141,7 @@ public class Extrinsic extends Struct implements Types.IExtrinsic {
     }
 
     /**
-     * `true` is method has `Origin` argument (compatibility with {@link Method})
+     * `true` is method has `Origin` argument (compatibility with {@link org.polkadot.types.primitive.Method})
      */
     @Override
     public boolean hasOrigin() {
@@ -155,7 +172,7 @@ public class Extrinsic extends Struct implements Types.IExtrinsic {
     }
 
     /**
-     * The {@link Method} this extrinsic wraps
+     * The {@link org.polkadot.types.primitive.Method} this extrinsic wraps
      */
     @Override
     public Method getMethod() {
@@ -166,18 +183,17 @@ public class Extrinsic extends Struct implements Types.IExtrinsic {
      * The ExtrinsicSignature
      */
     @Override
-    public ExtrinsicSignature getSignature() {
+    public ExtrinsicSignatureV4 getSignature() {
         return this.getField("signature");
     }
-
 
     /**
      * Add an ExtrinsicSignature to the extrinsic (already generated)
      */
     //addSignature(signer:Address|Uint8Array, signature:Uint8Array, nonce:AnyNumber, era?:Uint8Array):Extrinsic
     @Override
-    public Extrinsic addSignature(Object signer, byte[] signature, Object payload) throws Exception {
-        this.getSignature().addSignature(signer, signature, (SignaturePayload) payload);
+    public ExtrinsicV4 addSignature(Object signer, byte[] signature, Object payload) throws Exception {
+        this.getSignature().addSignature(signer, signature, (SignaturePayloadV4) payload);
         return this;
     }
 
@@ -186,7 +202,7 @@ public class Extrinsic extends Struct implements Types.IExtrinsic {
      */
     //sign(account:KeyringPair, options:SignatureOptions):Extrinsic
     @Override
-    public Extrinsic sign(KeyringPair account, Types.SignatureOptions options) {
+    public ExtrinsicV4 sign(KeyringPair account, Types.SignatureOptions options) {
         this.getSignature().sign(this.getMethod(), account, options);
         return this;
     }
@@ -215,7 +231,7 @@ public class Extrinsic extends Struct implements Types.IExtrinsic {
     @Override
     public byte[] toU8a(Object isBare) {
         byte[] encoded = super.toU8a(false);
-        return (Boolean)isBare
+        return (Boolean) isBare
                 ? encoded
                 : Utils.compactAddLength(encoded);
     }

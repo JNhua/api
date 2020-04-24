@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public interface Types {
@@ -35,13 +36,6 @@ public interface Types {
 
     }
 
-    //  export type KeyringPair$Meta = {
-    //[index: string]: any
-    //  };
-    //export type KeyringPair$JsonVersion = '0' | '1' | '2';
-    //enum KeyringPairJsonVersion {
-    //    v0, v1, v2
-    //}
     List<String> KeyringPairJsonVersion = Lists.newArrayList("0", "1", "2");
 
     class KeyringPairJsonEncoding {
@@ -73,13 +67,6 @@ public interface Types {
             this.version = version;
         }
     }
-
-    //export type KeyringPair$JsonEncoding = {
-    //    content: ['pkcs8', KeypairType],
-    //    type: 'xsalsa20-poly1305' | 'none',
-    //            version: KeyringPair$JsonVersion
-    //};
-
 
     class KeyringPairJson {
         String address;
@@ -120,12 +107,21 @@ public interface Types {
         }
     }
 
-    //export type KeyringPair$Json = {
-    //    address: string,
-    //            encoded: string,
-    //            encoding: KeyringPair$JsonEncoding,
-    //            meta: KeyringPair$Meta
-    //};
+    class SignOptions{
+        boolean withType;
+
+        public boolean isWithType() {
+            return withType;
+        }
+
+        public void setWithType(boolean withType) {
+            this.withType = withType;
+        }
+
+        public SignOptions(boolean withType){
+            this.withType = withType;
+        }
+    }
 
     interface KeyringPair {
         String getType();
@@ -146,7 +142,7 @@ public interface Types {
 
         void setMeta(KeyringPairMeta meta);
 
-        byte[] sign(byte[] message);
+        byte[] sign(byte[] message, SignOptions options);
 
         KeyringPairJson toJson(String passphrase);
 

@@ -85,6 +85,9 @@ public class EnumType<T> extends Base<Codec> implements Codec {
             return EnumType.createValue(def, ((EnumType) value).index, ((EnumType) value).raw);
         } else if (Utils.isU8a(value)) {
             byte[] u8a = (byte[]) value;
+            if (u8a.length == 0) {
+                u8a = new byte[]{0, 0};
+            }
             return EnumType.createValue(def, u8a[0], Arrays.copyOfRange(u8a, 1, u8a.length));
         } else if (value instanceof Number) {
             return EnumType.createValue(def, ((Number) value).intValue(), null);
@@ -92,19 +95,22 @@ public class EnumType<T> extends Base<Codec> implements Codec {
             String str = value.toString();
             return Utils.isHex(str) ? EnumType.decodeViaValue(def, aliasses, hexToU8a(str))
                     : EnumType.createViaJSON(def, aliasses, str, null);
-        }
-        //    } else if (isObject(value)) {
-        else if (value instanceof Map) {
-            Map value1 = (Map) value;
-            Object key = value1.keySet().stream().findFirst().orElse(null);
-            return createViaJSON(def, aliasses, (String) key, value1.get(key));
-            //const key = Object.keys(value)[0];
-            //      return EnumType.createViaJSON(def, aliasses, key, value[key]);
-            //TODO 2019-05-07 17:36
-            //throw new UnsupportedOperationException(" decodeViaValue " + value);
+        } else if (value != null) {
+            String key = value.getClass().getSimpleName();
+            return decodeFromJSON(def, key, value);
         }
         // Worst-case scenario, return the first with default
         return EnumType.createValue(def, 0, null);
+    }
+
+    private static Pair<Integer, Codec> decodeFromJSON(Types.ConstructorDef def, String key, Object value) {
+
+
+        List<String> keys = def.getNames().stream().map(String::toLowerCase).collect(Collectors.toList());
+        String keyLower = key.toLowerCase();
+        int index = keys.indexOf(keyLower);
+
+        return EnumType.createValue(def, index, value);
     }
 
     private static Pair<Integer, Codec> createViaJSON(Types.ConstructorDef def, LinkedHashMap<String, String> aliasses, String key, Object value) {
@@ -189,9 +195,9 @@ public class EnumType<T> extends Base<Codec> implements Codec {
         return this.def.getNames().get(this.index);
     }
 
-  /**
-   * The index of the metadata value
-   */
+    /**
+     * The index of the metadata value
+     */
     public int index() {
         return this.index;
     }
@@ -203,32 +209,32 @@ public class EnumType<T> extends Base<Codec> implements Codec {
         return this.raw instanceof Null;
     }
 
-  /**
-   * The length of the value when encoded as a Uint8Array
-   */
+    /**
+     * The length of the value when encoded as a Uint8Array
+     */
     @Override
     public int getEncodedLength() {
         return 1 + this.raw.getEncodedLength();
     }
 
-  /**
-   * Checks if the value is an empty value
-   */
+    /**
+     * Checks if the value is an empty value
+     */
     @Override
     public boolean isEmpty() {
         return this.raw.isEmpty();
     }
 
-  /**
-   * Checks if the Enum points to a {@link org.polkadot.types.primitive.Null} type
-   */
+    /**
+     * Checks if the Enum points to a {@link org.polkadot.types.primitive.Null} type
+     */
     public boolean isNone() {
         return this.isNull();
     }
 
-  /**
-   * Compares the value of the input to see if there is a match
-   */
+    /**
+     * Compares the value of the input to see if there is a match
+     */
     @Override
     public boolean eq(Object other) {
 
@@ -242,17 +248,17 @@ public class EnumType<T> extends Base<Codec> implements Codec {
         return this.value().eq(other);
     }
 
-  /**
-   * Returns a hex string representation of the value
-   */
+    /**
+     * Returns a hex string representation of the value
+     */
     @Override
     public String toHex() {
         return Utils.u8aToHex(this.toU8a());
     }
 
-  /**
-   * Converts the Object to JSON, typically used for RPC transfers
-   */
+    /**
+     * Converts the Object to JSON, typically used for RPC transfers
+     */
     @Override
     public Object toJson() {
         JSONObject jsonObject = new JSONObject();
@@ -261,9 +267,9 @@ public class EnumType<T> extends Base<Codec> implements Codec {
         return jsonObject;
     }
 
-  /**
-   * Returns the string representation of the value
-   */
+    /**
+     * Returns the string representation of the value
+     */
     @Override
     public String toString() {
         return this.isNull()
@@ -271,12 +277,13 @@ public class EnumType<T> extends Base<Codec> implements Codec {
                 : JSON.toJSONString(this.toJson());
     }
 
-  /**
-   * Encodes the value as a Uint8Array as per the parity-codec specifications
-   * @param isBare true when the value has none of the type-specific prefixes (internal)
-   */
+    /**
+     * Encodes the value as a Uint8Array as per the parity-codec specifications
+     *
+     * @param isBare true when the value has none of the type-specific prefixes (internal)
+     */
     @Override
-    public byte[] toU8a(boolean isBare) {
+    public byte[] toU8a(Object isBare) {
         Integer index = this.indexes.get(this.index);
         return Utils.u8aConcat(Lists.newArrayList(new byte[]{
                 index.byteValue()
